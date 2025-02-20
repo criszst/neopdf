@@ -242,7 +242,7 @@ export default function Home() {
           >
             <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">Frequently asked questions</h2>
             <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-400">
-              Can't find what you're looking for? Contact our support team.
+              Cant find what youre looking for? Contact our support team.
             </p>
           </motion.div>
 
