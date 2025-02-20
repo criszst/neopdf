@@ -44,7 +44,7 @@ const PricingComponent = ():JSX.Element => {
         </div>
       </motion.div>
 
-      <div className="mt-16 grid gap-8 lg:grid-cols-3">
+      <div className="mt-20 grid gap-6 lg:grid-cols-2">
         {/* Free Plan */}
         <motion.div
           className="rounded-2xl bg-white/5 p-8 backdrop-blur-sm"
@@ -110,41 +110,6 @@ const PricingComponent = ():JSX.Element => {
           </ul>
           <button className="mt-8 w-full rounded-lg bg-white py-2 text-sm font-medium text-purple-600 hover:bg-gray-50">
             Get Started
-          </button>
-        </motion.div>
-
-        {/* Enterprise Plan */}
-        <motion.div
-          className="rounded-2xl bg-white/5 p-8 backdrop-blur-sm"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <h3 className="text-lg font-medium text-white">Enterprise</h3>
-          <p className="mt-4 text-sm text-gray-400">For large organizations</p>
-          <p className="mt-8">
-            <span className="text-4xl font-bold text-white">Custom</span>
-          </p>
-          <ul className="mt-8 space-y-4">
-            <li className="flex items-center text-sm text-gray-400">
-              <Check className="mr-3 h-4 w-4 text-purple-400" />
-              Everything in Pro
-            </li>
-            <li className="flex items-center text-sm text-gray-400">
-              <Check className="mr-3 h-4 w-4 text-purple-400" />
-              Custom integration
-            </li>
-            <li className="flex items-center text-sm text-gray-400">
-              <Check className="mr-3 h-4 w-4 text-purple-400" />
-              24/7 support
-            </li>
-            <li className="flex items-center text-sm text-gray-400">
-              <Check className="mr-3 h-4 w-4 text-purple-400" />
-              SLA guarantee
-            </li>
-          </ul>
-          <button className="mt-8 w-full rounded-lg border border-purple-600 py-2 text-sm font-medium text-white hover:bg-purple-600">
-            Contact Sales
           </button>
         </motion.div>
       </div>
