@@ -1,6 +1,4 @@
 import React, { JSX } from "react";
-import Image from "next/image"
-import Link from "next/link"
 const FooterComponent = (): JSX.Element => {
   return (
     <footer className="bg-black py-12 border-t border-black">

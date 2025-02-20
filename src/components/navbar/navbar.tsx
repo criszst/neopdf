@@ -1,19 +1,17 @@
 "use client"
 
-import { useState } from "react"
 import Link from "next/link"
-import { motion } from "framer-motion"
 
 const NavbarComponent = () => {
-  const [hoveredLink, setHoveredLink] = useState<string | null>(null)
+  // const [hoveredLink, setHoveredLink] = useState<string | null>(null)
 
-  const navLinks = [
-    { name: "Templates", href: "/templates" },
-    { name: "Marketplace", href: "/marketplace" },
-    { name: "Discover", href: "/discover" },
-    { name: "Pricing", href: "/pricing" },
-    { name: "Learn", href: "/learn" },
-  ]
+  // const navLinks = [
+  //   { name: "Templates", href: "/templates" },
+  //   { name: "Marketplace", href: "/marketplace" },
+  //   { name: "Discover", href: "/discover" },
+  //   { name: "Pricing", href: "/pricing" },
+  //   { name: "Learn", href: "/learn" },
+  // ]
 
   return (
     <nav className="fixed left-0 right-0 top-0 z-50 border-b border-white/10 bg-black/50 backdrop-blur-md">

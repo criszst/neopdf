@@ -2,24 +2,10 @@
 import React, { JSX } from "react"
 
 import { motion } from "framer-motion"
-import Image from "next/image"
-import Link from "next/link"
 import {
-  FileText,
-  Search,
-  Share2,
-  Zap,
   Check,
-  ChevronDown,
-  Globe,
-  Cloud,
-  Lock,
-  Smartphone,
-  Monitor,
-  Tablet,
 } from "lucide-react"
 import { useState } from "react"
-import NavbarComponent from "@/components/navbar/navbar"
 
 const PricingComponent = ():JSX.Element => {
   const [selectedPlan, setSelectedPlan] = useState<"monthly" | "yearly">("monthly")

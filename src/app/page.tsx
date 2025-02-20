@@ -5,15 +5,9 @@ import Image from "next/image"
 import Link from "next/link"
 
 import {
-  FileText,
-  Search,
-  Share2,
-  Zap,
   Check,
   ChevronDown,
   Globe,
-  Cloud,
-  Lock,
   Smartphone,
   Monitor,
   Tablet,
