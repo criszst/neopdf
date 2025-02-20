@@ -17,7 +17,6 @@ import NavbarComponent from "@/components/navbar/navbar"
 import PricingComponent from "@/components/home/pricing"
 import FooterComponent from "@/components/footer/footer"
 import { faqs, features } from "@/utils/faqs"
-import TestimonialsComponent from "@/components/home/testimonials"
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
