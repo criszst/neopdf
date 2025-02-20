@@ -17,6 +17,7 @@ import NavbarComponent from "@/components/navbar/navbar"
 import PricingComponent from "@/components/home/pricing"
 import FooterComponent from "@/components/footer/footer"
 import { faqs, features } from "@/utils/faqs"
+import FeatureComparison from "@/components/home/comparasion"
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -26,14 +27,12 @@ const fadeIn = {
 
 export default function Home() {
   const [openFaq, setOpenFaq] = useState<number | null>(null)
-  
 
-  
 
   return (
     <div className="min-h-screen bg-[#0A0A0B]">
       {/* Navigation */}
-     <NavbarComponent />
+      <NavbarComponent />
 
       {/* Hero Section */}
       <div className="relative overflow-hidden pt-16">
@@ -52,15 +51,15 @@ export default function Home() {
                   performance make document management a breeze.
                 </p>
                 <div className="mt-8 sm:mx-auto sm:max-w-lg sm:text-center lg:mx-0 lg:text-left">
-                  <div className="grid grid-cols-2 gap-4 radius-2xl">
-                  
+                  <div className="grid grid-cols-1 gap-4 radius-2xl">
+
                     <Link
                       href="/login"
-                      className="flex items-center justify-center rounded-lg bg-purple-600 px-4 py-3 text-base font-medium text-white hover:bg-purple-500"
+                      className="flex items-center justify-center rounded-lg bg-purple-600 px-4 py-2 text-base font-medium text-white hover:bg-purple-500"
                     >
                       NEO Reader
                     </Link>
-          
+
 
                   </div>
                   <div className="mt-4 flex items-center justify-center gap-4 text-sm text-gray-400 lg:justify-start">
@@ -130,6 +129,26 @@ export default function Home() {
         </div>
       </div>
 
+      <div className="bg-black py-24">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <motion.div
+            className="text-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">How NeoPDF Compares</h2>
+            <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-400">
+              See how NeoPDF stacks up against the competition.
+            </p>
+          </motion.div>
+          <div className="mt-16">
+            <FeatureComparison />
+          </div>
+        </div>
+      </div>
+
+
       {/* Cross-Platform Section */}
       <div className="bg-black py-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -141,10 +160,10 @@ export default function Home() {
           >
             <div>
               <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-                Available on all your devices
+                For now, is avaliabe just for Web
               </h2>
               <p className="mt-4 text-lg text-gray-400">
-                Access your documents anywhere, anytime. NeoPDF syncs seamlessly across all platforms.
+                But in future, NeoPDF will be available for Desktop, Mobile, Tablet and Web
               </p>
 
               <div className="mt-8 grid grid-cols-2 gap-4">
@@ -183,10 +202,7 @@ export default function Home() {
       </div>
 
       {/* Pricing Section */}
-     <PricingComponent />
-
-      {/* Testimonials Section */}
-     {/* <TestimonialsComponent /> */}
+      <PricingComponent />
 
       {/* FAQ Section */}
       <div className="bg-black py-24">
@@ -239,8 +255,8 @@ export default function Home() {
       </div>
 
       {/* Footer */}
-     
-     <FooterComponent />
+
+      <FooterComponent />
 
     </div>
   )
