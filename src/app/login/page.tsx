@@ -186,7 +186,7 @@ const LoginPage: React.FC = () => {
           className="mb-20"
         >
           <Link href="/signup" className="block text-center text-sm text-gray-400 hover:text-white transition-colors">
-            Don't have an account? <span className="text-purple-400">Create one</span>
+            Don&apos;t have an account? <span className="text-purple-400">Create one</span>
           </Link>
         </motion.div>
       </div>
