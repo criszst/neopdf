@@ -14,10 +14,15 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "NeoPDF",
-  description: "A new era of PDF experience",
-  icons: {
-    icon: "/favicon.ico",
-  }
+  description: "Neo Era of PDF",
+  generator: "NeoPDF",
+  applicationName: "NeoPDF",
+  referrer: "origin",
+
+  robots: "index, follow, noarchive, nocache",
+
+  authors: [{ name: "NeoPDF", url: "https://neopdf.com.br/" }],
+
 };
 
 export default function RootLayout({
@@ -27,6 +32,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+      <link rel="icon" href="/neoPDF-1.png" sizes="any" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

@@ -2,10 +2,8 @@
 
 import { motion, useScroll, useTransform } from "framer-motion"
 import Image from "next/image"
-import Link from "next/link"
 
 import {
-  Check,
   ChevronDown,
 } from "lucide-react"
 import { useRef, useState } from "react"
@@ -15,13 +13,9 @@ import FooterComponent from "@/components/footer/footer"
 import { faqs, features } from "@/utils/faqs"
 import FeatureComparison from "@/components/home/comparasion"
 import AnimatedBackground from "@/components/animations/AnimatedBackground"
+import Link from "next/link"
 
 
-const fadeIn = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.5 },
-}
 
 export default function Home() {
   const [openFaq, setOpenFaq] = useState<number | null>(null)
@@ -44,62 +38,66 @@ export default function Home() {
       <div className="relative overflow-hidden bg-gradient-to-b from-black to-purple-900/20 py-10">
         <AnimatedBackground />
        
-        <motion.div className="relative pt-16" style={{ opacity, scale }}>
+        <motion.div className="relative pt-32" style={{ opacity, scale }}>
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="relative pb-16 pt-16 sm:pb-24">
-              <div className="lg:grid lg:grid-cols-12 lg:gap-8">
-                <motion.div className="sm:text-center md:mx-auto md:max-w-2xl lg:col-span-6 lg:text-left" {...fadeIn}>
-                  <h1>
+            <div className="text-center">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="relative z-10"
+              >
+                <h1 className="text-sm font-medium uppercase tracking-wider text-blue-400">
+                  PDF Management Reimagined
+                </h1>
+                <p className="mt-3 text-4xl font-light tracking-tight text-white sm:text-6xl">
+                  <span className="font-medium text-purple-500">Neo</span> Era of PDF Experience
+                </p>
+                <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-400">
+                  Transform how you interact with PDFs. Advanced features, intuitive interface, and lightning-fast
+                  performance make document management a breeze.
+                </p>
+              </motion.div>
 
-                    <span className="mt-1 block text-center text-4xl font-bold tracking-tight text-white sm:text-5xl xl:text-6xl">
-                      A <span className="text-purple-400">Neo</span> Era of PDF
-                    </span>
-                  </h1>
-                  <p className="mt-3 text-center text-base text-gray-300 sm:mt-5 sm:text-xl lg:text-lg xl:text-xl">
-                    Transform how you interact with PDFs. Advanced features, intuitive interface, and lightning-fast
-                    performance make document management a breeze.
-                  </p>
-                  <div className= " mt-8 sm:mx-auto sm:max-w-lg sm:text-center lg:mx-0 lg:text-left">
-                    <div className="grid grid-cols-1 gap-4">
-                      <Link
-                        href="#"
-                        className="flex items-center justify-center rounded-lg bg-purple-600 px-4 py-3 text-base font-medium text-white hover:bg-purple-500"
-                      >
-                        NeoReader
-                      </Link>
-                    </div>
-                    <div className="mt-4 flex items-center justify-center gap-4 text-sm text-gray-400 lg:justify-start">
-                      <div className="flex items-center">
-                        <Check className="mr-2 h-4 w-4 text-purple-400" />
-                        Free Trial
-                      </div>
-                      <div className="flex items-center">
-                        <Check className="mr-2 h-4 w-4 text-purple-400" />
-                        No Credit Card
-                      </div>
-                    </div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className="mt-10"
+              >
+                <div className="flex justify-center gap-4">
+                  <Link href="/login">
+                  <button className="group relative overflow-hidden rounded-lg bg-purple-800 px-6 py-3 text-sm font-medium text-white shadow-lg transition-all hover:scale-105" 
+                  >
+                    <div className="absolute inset-0 bg-white/10 opacity-0 transition-opacity group-hover:opacity-100" />
+                    Get Started
+                  </button>
+                  </Link>
+                  <button className="rounded-lg border border-white/10 bg-white/5 px-6 py-3 text-sm font-medium text-white backdrop-blur-sm transition-all hover:scale-105 hover:bg-white/10">
+                    Learn More
+                  </button>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+                className="relative mt-20"
+              >
+                <div className="relative mx-auto max-w-5xl overflow-hidden rounded-xl bg-gradient-to-b from-white/5 to-white/0 p-1 shadow-2xl">
+                  <div className="relative rounded-lg bg-[#010614]/50 p-8 backdrop-blur-sm">
+                    <Image
+                      src="/placeholder.svg"
+                      alt="NeoPDF Interface"
+                      width={1200}
+                      height={800}
+                      className="rounded-lg shadow-2xl"
+                    />
+                    <div className="absolute inset-0 rounded-lg bg-gradient-to-t from-[#010614] via-transparent to-transparent" />
                   </div>
-                </motion.div>
-                <motion.div
-                  className="relative mt-12 sm:mx-auto sm:max-w-lg lg:col-span-6 lg:mx-0 lg:mt-0 lg:flex lg:max-w-none lg:items-center"
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
-                >
-                  <div className="relative mx-auto w-full rounded-lg shadow-lg lg:max-w-md">
-                    <div className="relative block w-full overflow-hidden rounded-lg bg-white/5 backdrop-blur-sm">
-                      <Image
-                        src="/placeholder.svg"
-                        alt="NeoPDF Interface"
-                        width={500}
-                        height={300}
-                        className="w-full"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/50" />
-                    </div>
-                  </div>
-                </motion.div>
-              </div>
+                </div>
+              </motion.div>
             </div>
           </div>
         </motion.div>
