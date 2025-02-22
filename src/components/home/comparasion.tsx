@@ -15,25 +15,22 @@ const FeatureComparison = () => {
       <table className="w-full text-left">
         <thead>
           <tr className="border-b border-white/10">
-            <th className="py-4 px-6 text-white">Feature</th>
-            <th className="py-4 px-6 text-purple-400">NeoPDF</th>
-            <th className="py-4 px-6 text-gray-400">Competitor 1</th>
-            <th className="py-4 px-6 text-gray-400">Competitor 2</th>
+            <th className="py-4 px-4 text-white">Feature</th>
+            <th className="py-4 px-4 text-purple-400">NeoPDF</th>
+            <th className="py-4 px-4 text-gray-400">Competitor 1</th>
           </tr>
         </thead>
         <tbody>
           {features.map((feature, index) => (
             <tr key={index} className="border-b border-white/10">
-              <td className="py-4 px-6 text-white">{feature.name}</td>
+              <td className="py-4 px-4 text-white">{feature.name}</td>
               <td className="py-4 px-6">
                 {feature.neopdf ? <Check className="text-green-500" /> : <X className="text-red-500" />}
               </td>
               <td className="py-4 px-6">
                 {feature.competitor1 ? <Check className="text-green-500" /> : <X className="text-red-500" />}
               </td>
-              <td className="py-4 px-6">
-                {feature.competitor2 ? <Check className="text-green-500" /> : <X className="text-red-500" />}
-              </td>
+  
             </tr>
           ))}
         </tbody>
