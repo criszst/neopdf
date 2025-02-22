@@ -15,9 +15,9 @@ export const authOptions = {
   ],
 
   secret: process.env.NEXTAUTH_SECRET, // Definir a chave secreta
-  
+
   callbacks: {
-    async session({ session, user }: { session: any, user: { id: string } }) {
+    async session({ session, user }: { session, user: { id: string } }) {
       session.user.id = user.id // Adiciona o ID do usuário à sessão
       return session
     }
