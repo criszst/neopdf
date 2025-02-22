@@ -1,20 +1,22 @@
 "use client"
+import { useRef, useState } from "react"
+
+import Image from "next/image"
+import Link from "next/link"
 
 import { motion, useScroll, useTransform } from "framer-motion"
-import Image from "next/image"
 
-import {
-  ChevronDown,
-} from "lucide-react"
-import { useRef, useState } from "react"
+import { faqs } from "@/utils/faqs"
+import { features } from "@/utils/feats"
+
+import { ChevronDown } from "lucide-react"
+
 import NavbarComponent from "@/components/navbar/navbar"
 import PricingComponent from "@/components/home/pricing"
 import FooterComponent from "@/components/footer/footer"
-import { faqs, features } from "@/utils/faqs"
+
 import FeatureComparison from "@/components/home/comparasion"
 import AnimatedBackground from "@/components/animations/AnimatedBackground"
-import Link from "next/link"
-
 
 
 export default function Home() {
@@ -176,9 +178,6 @@ export default function Home() {
         transition={{ duration: 0.5 }}
       >
         <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">Frequently asked questions</h2>
-        <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-400">
-          Cant find what youre looking for? Contact our support team.
-        </p>
       </motion.div>
 
       <div className="mt-16 max-w-3xl mx-auto">

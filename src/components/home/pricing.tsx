@@ -69,10 +69,10 @@ const PricingComponent = ():JSX.Element => {
             </li>
             <li className="flex items-center text-sm text-gray-400">
               <Check className="mr-3 h-4 w-4 text-purple-400" />
-              Up to 3 documents
+              Up to 10 documents
             </li>
           </ul>
-          <button className="mt-8 w-full rounded-lg border border-purple-600 py-2 text-sm font-medium text-white hover:bg-purple-600">
+          <button className="mt-20 w-full rounded-lg border border-purple-600 py-3 text-sm font-medium text-white hover:bg-purple-600">
             Get Started
           </button>
         </motion.div>
@@ -108,7 +108,7 @@ const PricingComponent = ():JSX.Element => {
               Unlimited documents
             </li>
           </ul>
-          <button className="mt-8 w-full rounded-lg bg-white py-2 text-sm font-medium text-purple-600 hover:bg-gray-50">
+          <button className="mt-11 w-full rounded-lg bg-white py-3 text-sm font-medium text-purple-600 hover:bg-gray-50">
             Get Started
           </button>
         </motion.div>
