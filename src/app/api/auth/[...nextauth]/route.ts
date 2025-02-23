@@ -8,7 +8,7 @@ import bcrypt from "bcryptjs"
 
 const prisma = new PrismaClient()
 
-const authOptions: NextAuthOptions = {
+export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
@@ -24,7 +24,9 @@ const authOptions: NextAuthOptions = {
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
-        })
+          select: { id: true, email: true, name: true, password: true },
+        });
+        
 
         if (!user) {
           throw new Error("User not found")
@@ -78,4 +80,4 @@ const authOptions: NextAuthOptions = {
 }
 
 const handler = NextAuth(authOptions)
-export { handler as GET, handler as POST }
+export { handler as GET, handler as POST } // ✅ Apenas handler exportado

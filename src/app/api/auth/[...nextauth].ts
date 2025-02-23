@@ -16,11 +16,13 @@ export default NextAuth({
       async authorize(credentials) {
         const user = await prisma.user.findUnique({
           where: { email: credentials?.email },
+          select: { id: true, email: true, name: true, password: true },
         });
+        
 
         if (!user) throw new Error("Usuário não encontrado");
 
-        const isValid = await bcrypt.compare(credentials!.password, user.password);
+        const isValid = await bcrypt.compare(credentials!.password, user.password ?? "");
         if (!isValid) throw new Error("Senha incorreta");
 
         return { id: user.id, name: user.name, email: user.email };
@@ -31,7 +33,7 @@ export default NextAuth({
   callbacks: {
     async session({ session, token }) {
       if (token) {
-        session.user.id = token.id;
+        session.user.id = token.id as string;
       }
       return session;
     },
