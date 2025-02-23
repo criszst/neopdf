@@ -1,5 +1,4 @@
-import NextAuth from "next-auth"
-import type { NextAuthOptions } from "next-auth"
+import NextAuth, { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import GitHubProvider from "next-auth/providers/github"
 import GoogleProvider from "next-auth/providers/google"
@@ -9,7 +8,7 @@ import bcrypt from "bcryptjs"
 
 const prisma = new PrismaClient()
 
-export const authOptions: NextAuthOptions = {
+const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
@@ -31,7 +30,7 @@ export const authOptions: NextAuthOptions = {
           throw new Error("User not found")
         }
 
-        const isPasswordValid = bcrypt.compare(credentials.password, user.password ?? '');
+        const isPasswordValid = await bcrypt.compare(credentials.password, user.password ?? '')
 
         if (!isPasswordValid) {
           throw new Error("Invalid password")
@@ -45,11 +44,11 @@ export const authOptions: NextAuthOptions = {
       },
     }),
     GitHubProvider({
-      clientId: process.env.GITHUB_ID || "", // Alterado para corresponder ao .env
+      clientId: process.env.GITHUB_ID || "",
       clientSecret: process.env.GITHUB_SECRET || "",
     }),
     GoogleProvider({
-      clientId: process.env.GOOGLE_ID || "", // Alterado para corresponder ao .env
+      clientId: process.env.GOOGLE_ID || "",
       clientSecret: process.env.GOOGLE_SECRET || "",
     }),
   ],
@@ -80,4 +79,3 @@ export const authOptions: NextAuthOptions = {
 
 const handler = NextAuth(authOptions)
 export { handler as GET, handler as POST }
-
