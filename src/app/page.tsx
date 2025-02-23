@@ -39,7 +39,7 @@ export default function Home() {
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-gradient-to-b from-black to-purple-900/20 py-10">
         <AnimatedBackground />
-       
+
         <motion.div className="relative pt-32" style={{ opacity, scale }}>
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="text-center">
@@ -69,11 +69,11 @@ export default function Home() {
               >
                 <div className="flex justify-center gap-4">
                   <Link href="/login">
-                  <button className="group relative overflow-hidden rounded-lg bg-purple-800 px-6 py-3 text-sm font-medium text-white shadow-lg transition-all hover:scale-105" 
-                  >
-                    <div className="absolute inset-0 bg-white/10 opacity-0 transition-opacity group-hover:opacity-100" />
-                    Get Started
-                  </button>
+                    <button className="group relative overflow-hidden rounded-lg bg-purple-800 px-6 py-3 text-sm font-medium text-white shadow-lg transition-all hover:scale-105"
+                    >
+                      <div className="absolute inset-0 bg-white/10 opacity-0 transition-opacity group-hover:opacity-100" />
+                      Get Started
+                    </button>
                   </Link>
                   <button className="rounded-lg border border-white/10 bg-white/5 px-6 py-3 text-sm font-medium text-white backdrop-blur-sm transition-all hover:scale-105 hover:bg-white/10">
                     Learn More
@@ -106,7 +106,7 @@ export default function Home() {
       </div>
 
 
-      {/* Features Grid */ }
+      {/* Features Grid */}
       <div className="bg-gradient-to-b from-black/40 to-purple-900/40 py-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <motion.div
@@ -143,8 +143,14 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="bg-black py-24"> 
-      {/* <div className="bg-black py-24"> */}
+      {/* Feature Comparison */}
+      <FeatureComparison />
+
+      {/* Pricing Section */}
+      <PricingComponent />
+
+      {/* FAQ Section */}
+      <div className="bg-black py-24" id="faq">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <motion.div
             className="text-center"
@@ -152,72 +158,47 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">How NeoPDF Compares</h2>
-            <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-400">
-              See how NeoPDF stacks up against the competition.
-            </p>
+            <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">Frequently asked questions</h2>
           </motion.div>
-          <div className="mt-16">
-            <FeatureComparison />
+
+          <div className="mt-16 max-w-3xl mx-auto">
+            {faqs.map((faq, index) => (
+              <motion.div
+                key={index}
+                className="border-b border-white/10"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+              >
+                <button
+                  className="flex w-full items-center justify-between py-6 text-left"
+                  onClick={() => setOpenFaq(openFaq === index ? null : index)}
+                >
+                  <span className="text-lg font-medium text-white">{faq.question}</span>
+                  <ChevronDown
+                    className={`h-5 w-5 text-gray-400 transition-transform ${openFaq === index ? "rotate-180" : ""}`}
+                  />
+                </button>
+                {openFaq === index && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="pb-6 text-gray-400"
+                  >
+                    {faq.answer}
+                  </motion.div>
+                )}
+              </motion.div>
+            ))}
           </div>
         </div>
       </div>
 
+      {/* Footer */}
 
-
-  {/* Pricing Section */ }
-  <PricingComponent />
-
-  {/* FAQ Section */ }
-  <div className="bg-black py-24">
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <motion.div
-        className="text-center"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">Frequently asked questions</h2>
-      </motion.div>
-
-      <div className="mt-16 max-w-3xl mx-auto">
-        {faqs.map((faq, index) => (
-          <motion.div
-            key={index}
-            className="border-b border-white/10"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
-          >
-            <button
-              className="flex w-full items-center justify-between py-6 text-left"
-              onClick={() => setOpenFaq(openFaq === index ? null : index)}
-            >
-              <span className="text-lg font-medium text-white">{faq.question}</span>
-              <ChevronDown
-                className={`h-5 w-5 text-gray-400 transition-transform ${openFaq === index ? "rotate-180" : ""}`}
-              />
-            </button>
-            {openFaq === index && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="pb-6 text-gray-400"
-              >
-                {faq.answer}
-              </motion.div>
-            )}
-          </motion.div>
-        ))}
-      </div>
-    </div>
-  </div>
-
-  {/* Footer */ }
-
-  <FooterComponent />
+      <FooterComponent />
 
     </div >
   )

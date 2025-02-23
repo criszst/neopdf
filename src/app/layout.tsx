@@ -36,7 +36,8 @@ export default function RootLayout({
       <link rel="icon" href="/neoPDF-1.png" sizes="any" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`
+        }
       >
         {children}
       </body>
