@@ -20,7 +20,7 @@ export default NextAuth({
 
         if (!user) throw new Error("Usuário não encontrado");
 
-        const isValid = await bcrypt.compare(credentials!.password, user.password);
+        const isValid = await bcrypt.compare(credentials!.password, user.password ?? "");
         if (!isValid) throw new Error("Senha incorreta");
 
         return { id: user.id, name: user.name, email: user.email };
@@ -31,7 +31,7 @@ export default NextAuth({
   callbacks: {
     async session({ session, token }) {
       if (token) {
-        session.user.id = token.id;
+        session.user.id = token.id as string;
       }
       return session;
     },
