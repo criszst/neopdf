@@ -6,8 +6,8 @@ import Link from "next/link"
 
 import { motion, useScroll, useTransform } from "framer-motion"
 
-import { faqs } from "@/utils/faqs"
-import { features } from "@/utils/feats"
+import { faqs } from "@/lib/utils/faqs"
+import { features } from "@/lib/utils/feats"
 
 import { ChevronDown } from "lucide-react"
 
