@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { motion } from "framer-motion"
@@ -13,14 +13,21 @@ import { useRouter, useSearchParams } from "next/navigation"
 export default function LoginPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard"
-  const error = searchParams.get("error")
+  const [callbackUrl, setCallbackUrl] = useState("/dashboard");
+  const [error, setError] = useState<string | null>(null);
 
   const [loading, setLoading] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   })
+
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setCallbackUrl(params.get("callbackUrl") || "/dashboard");
+    setError(params.get("error"));
+  }, []);
 
   const handleOAuthSignIn = async (provider: "github" | "google") => {
     setLoading(provider)
