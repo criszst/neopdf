@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import SignoutButton from "@/components/login/SignoutButton";
-import { User } from "@/backend/user/User";
+import { User } from "next-auth";
+
 
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
