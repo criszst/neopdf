@@ -4,6 +4,7 @@ ALTER COLUMN "name" DROP NOT NULL,
 ALTER COLUMN "email" DROP NOT NULL,
 ALTER COLUMN "password" DROP NOT NULL,
 ALTER COLUMN "image" DROP NOT NULL;
+UPDATE "User" SET "password" = 'temporary_password' WHERE "password" IS NULL;
 
 -- CreateTable
 CREATE TABLE "Account" (
