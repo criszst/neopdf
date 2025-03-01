@@ -29,7 +29,7 @@ export default NextAuth({
       },
     }),
   ],
-  session: { strategy: "jwt" },
+  session: { strategy: sessionStorage.JWT },
   callbacks: {
     async session({ session, token }) {
       if (token) {
