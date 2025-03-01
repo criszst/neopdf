@@ -6,7 +6,7 @@ import { Document, Page, pdfjs } from "react-pdf"
 import { Download, Share, Github, ChevronLeft, ChevronRight, Plus, Minus, Maximize } from "lucide-react"
 import { Session, User } from "next-auth"
 
-// Configuração do worker PDF.js
+
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 export default function AdvancedPDFViewer() {
