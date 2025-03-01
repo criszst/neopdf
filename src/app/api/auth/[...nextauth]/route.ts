@@ -31,7 +31,7 @@ export const authOptions: NextAuthOptions = {
           throw new Error("User not found")
         }
 
-        const isPasswordValid = bcrypt.compare(credentials.password, user.password ?? '');
+        const isPasswordValid = await bcrypt.compare(credentials.password, user.password ?? "")
 
         if (!isPasswordValid) {
           throw new Error("Invalid password")
@@ -45,12 +45,12 @@ export const authOptions: NextAuthOptions = {
       },
     }),
     GitHubProvider({
-      clientId: process.env.GITHUB_ID || "", // Alterado para corresponder ao .env
+      clientId: process.env.GITHUB_ID || "",
       clientSecret: process.env.GITHUB_SECRET || "",
     }),
     GoogleProvider({
-      clientId: process.env.GOOGLE_ID || "", // Alterado para corresponder ao .env
-      clientSecret: process.env.GOOGLE_SECRET || "",
+      clientId: process.env.GOOGLE_ID ?? "",
+      clientSecret: process.env.GOOGLE_SECRET ?? "",
     }),
   ],
   session: {
@@ -74,9 +74,11 @@ export const authOptions: NextAuthOptions = {
     signIn: "/login",
     error: "/login",
   },
+
   debug: process.env.NODE_ENV === "development",
   secret: process.env.NEXTAUTH_SECRET,
 }
 
 const handler = NextAuth(authOptions)
 export { handler as GET, handler as POST }
+
