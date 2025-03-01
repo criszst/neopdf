@@ -39,12 +39,15 @@ model User {
   name          String?
   email         String?   @unique
   emailVerified DateTime?
-  password      String?
+  password      String
   image         String?
   accounts      Account[]
   sessions      Session[]
   createdAt     DateTime  @default(now())
+
+  @@map("users")
 }
+
 
 model VerificationToken {
   identifier String

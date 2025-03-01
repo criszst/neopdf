@@ -21,9 +21,9 @@ export const authOptions: NextAuthOptions = {
         }
 
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
+          where: { email: credentials?.email },
           select: { id: true, email: true, name: true, password: true },
-        })
+        });
 
         if (!user) {
           throw new Error("User not found")
