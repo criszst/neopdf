@@ -10,7 +10,7 @@ import {
   Star,
   Clock,
   Upload,
-  Menu,
+  MenuIcon,
   Search,
   Bell,
   ChevronDown,
@@ -22,6 +22,7 @@ import {
   BarChart3,
   PieChart,
   Calendar,
+  X,
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
@@ -98,6 +99,7 @@ const chartOptions = {
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -153,17 +155,22 @@ export default function Dashboard() {
 
   return (
     <div className="flex min-h-screen bg-[#0B0F19]">
-      {/* Sidebar melhorada */}
-      <div className="w-64 bg-[#151823] border-r border-purple-900/20">
+      {/* Sidebar */}
+      <div
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-[#151823] border-r border-purple-900/20 transform ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0`}
+      >
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="p-6">
+          <div className="p-6 flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <div className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-purple-500 to-purple-600 bg-clip-text text-transparent">
                 Neo
               </div>
               <div className="text-2xl font-bold text-white">PDF</div>
             </div>
+            <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-white">
+              <X className="h-6 w-6" />
+            </button>
           </div>
 
           {/* Search */}
@@ -242,28 +249,33 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Conteúdo Principal */}
-      <div className="flex-1">
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
         {/* Header */}
-        <header className="border-b border-purple-900/20 bg-[#151823]">
-          <div className="flex items-center justify-between px-8 py-4">
-            <h1 className="text-xl font-semibold text-white">Analytics Overview</h1>
+        <header className="border-b border-purple-900/20 bg-[#151823] sticky top-0 z-40">
+          <div className="flex items-center justify-between px-4 py-4 lg:px-8">
+            <div className="flex items-center">
+              <button onClick={() => setSidebarOpen(true)} className="mr-4 text-white lg:hidden">
+                <MenuIcon className="h-6 w-6" />
+              </button>
+              <h1 className="text-xl font-semibold text-white">Analytics Overview</h1>
+            </div>
             <div className="flex items-center space-x-4">
               <button className="p-2 text-zinc-400 hover:text-purple-400 rounded-lg hover:bg-purple-500/10 transition-all duration-200">
                 <Bell className="h-5 w-5" />
               </button>
               <button className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-all duration-200 shadow-lg shadow-purple-500/20">
                 <Upload className="h-4 w-4" />
-                <span>Upload PDF</span>
+                <span className="hidden sm:inline">Upload PDF</span>
               </button>
             </div>
           </div>
         </header>
 
         {/* Content */}
-        <div className="p-8">
+        <div className="flex-1 p-4 lg:p-8 overflow-auto">
           {/* Cards de Métricas */}
-          <div className="grid grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
             {[
               {
                 title: "Total PDFs",
@@ -319,12 +331,12 @@ export default function Dashboard() {
           {/* Gráfico Principal */}
           <Card className="mb-8 bg-[#151823] border-purple-900/20">
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
                 <div>
                   <CardTitle>PDF Analytics</CardTitle>
                   <CardDescription>Upload and processing trends</CardDescription>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 mt-4 sm:mt-0">
                   <button className="px-3 py-1 text-sm text-purple-400 bg-purple-500/10 rounded-lg hover:bg-purple-500/20">
                     Weekly
                   </button>
@@ -338,20 +350,20 @@ export default function Dashboard() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="h-[300px]">
+              <div className="h-[300px] w-full">
                 <Line data={chartData} options={chartOptions} />
               </div>
             </CardContent>
           </Card>
 
           {/* Cards Inferiores */}
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <Card className="bg-[#151823] border-purple-900/20">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle>Recent Activity</CardTitle>
                   <button className="p-1 hover:bg-purple-500/10 rounded">
-                    <Menu className="h-4 w-4 text-zinc-400" />
+                    <MenuIcon className="h-4 w-4 text-zinc-400" />
                   </button>
                 </div>
               </CardHeader>
@@ -426,7 +438,7 @@ export default function Dashboard() {
                     <span className="text-white group-hover:text-purple-400 transition-colors">Upload PDF</span>
                   </button>
                   {[
-                    { icon: Menu, label: "Merge PDFs" },
+                    { icon: MenuIcon, label: "Merge PDFs" },
                     { icon: Star, label: "View Favorites" },
                     { icon: Settings, label: "Settings" },
                   ].map((action) => (
