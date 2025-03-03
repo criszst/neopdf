@@ -27,10 +27,7 @@ import AnimatedBackground from "@/components/animations/AnimatedBackground"
 
 
 export default function Home() {
-  const router = useRouter()
   const [openFaq, setOpenFaq] = useState<number | null>(null)
-  const [user, setUser] = useState<User | null>(null)
-
   const scrollRef = useRef(null)
   const { scrollYProgress } = useScroll({
     target: scrollRef,
@@ -40,12 +37,6 @@ export default function Home() {
   const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0])
   const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.8])
 
-  // TODO: improve this router, cause its kind weird
-  useEffect(() => {
-    if (user?.email !== null) {
-      router.push("/dashboard")
-    }
-  }, [user, router])
 
   return (
 

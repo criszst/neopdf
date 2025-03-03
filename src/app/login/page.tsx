@@ -9,9 +9,13 @@ import { motion } from "framer-motion"
 import { ChevronLeft, ChevronRight, Github, Mail } from "lucide-react"
 import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
+import { User } from "next-auth"
 
 function LoginPageContent() {
   const router = useRouter()
+
+  const [user, setUser] = useState<User | null>(null)
+
   const [callbackUrl, setCallbackUrl] = useState("/dashboard")
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState<string | null>(null)
@@ -62,6 +66,14 @@ function LoginPageContent() {
       setLoading(null)
     }
   }
+
+    // TODO: improve this router, cause its kind weird
+    useEffect(() => {
+      if (user?.email !== null) {
+        router.push("/dashboard")
+      }
+    }, [user, router])
+  
 
   return (
     <div className="flex min-h-screen bg-black">

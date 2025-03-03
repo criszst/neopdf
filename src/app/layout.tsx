@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "NeoPDF",
-  description: "Neo Era of PDF",
+  description: "Neo Era of PDF - Increase your productivity with simple and secure PDF management.",
   generator: "NeoPDF",
   applicationName: "NeoPDF",
   referrer: "origin",
