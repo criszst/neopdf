@@ -42,16 +42,6 @@ export default function Home() {
 
     <div className="min-h-screen">
 
-      <DefaultSeo
-        title="NeoPDF"
-        description="Neo Era of PDF, increase your productivity with NeoPDF."
-        openGraph={{
-          type: 'website',
-          locale: 'en_IE',
-          url: 'https://www.neopdf.com.br/',
-          siteName: 'NeoPDF',
-        }}
-      />
       {/* Navigation */}
       <NavbarComponent />
 

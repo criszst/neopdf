@@ -1,10 +1,15 @@
 "use client"
 
 import { useEffect, useState } from "react"
+
+import { User } from "next-auth"
+
 import { useParams, useRouter } from "next/navigation"
+import Image from "next/image"
+
 import { Document, Page, pdfjs } from "react-pdf"
+
 import { Download, Share, Github, ChevronLeft, ChevronRight, Plus, Minus, Maximize } from "lucide-react"
-import { Session, User } from "next-auth"
 
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
@@ -97,7 +102,12 @@ export default function AdvancedPDFViewer() {
           <div className="flex justify-center mb-3">
             <div className="w-16 h-16 rounded-full bg-zinc-800 overflow-hidden">
               {user?.image && (
-                <img src={user.image} alt="User" className="w-full h-full object-cover" />
+                <Image 
+                src={user.image} 
+                alt="User" 
+                className="w-full h-full object-cover" 
+                width={100} 
+                height={100} />
               )}
             </div>
           </div>
