@@ -17,7 +17,7 @@ export default function AdvancedPDFViewer() {
   const [scale, setScale] = useState(1.0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>()
-  const [bgColor, setBgColor] = useState("#1e1e2e") // Cor de fundo padrão roxa-900
+  const [bgColor, setBgColor] = useState("#1e1e2e")
   const [user, setUser] = useState<User | null>(null)
 
   const router = useRouter()

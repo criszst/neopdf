@@ -1,15 +1,22 @@
 "use client"
-import { useRef, useState } from "react"
+
+import { useEffect, useRef, useState } from "react"
 
 import Image from "next/image"
 import Link from "next/link"
+
+import { User } from "next-auth"
+import { useRouter } from "next/navigation"
+
+import { DefaultSeo } from 'next-seo';
+
+import { ChevronDown } from "lucide-react"
 
 import { motion, useScroll, useTransform } from "framer-motion"
 
 import { faqs } from "@/lib/utils/faqs"
 import { features } from "@/lib/utils/feats"
 
-import { ChevronDown } from "lucide-react"
 
 import NavbarComponent from "@/components/navbar/navbar"
 import PricingComponent from "@/components/home/pricing"
@@ -20,7 +27,9 @@ import AnimatedBackground from "@/components/animations/AnimatedBackground"
 
 
 export default function Home() {
+  const router = useRouter()
   const [openFaq, setOpenFaq] = useState<number | null>(null)
+  const [user, setUser] = useState<User | null>(null)
 
   const scrollRef = useRef(null)
   const { scrollYProgress } = useScroll({
@@ -31,8 +40,27 @@ export default function Home() {
   const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0])
   const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.8])
 
+  // TODO: improve this router, cause its kind weird
+  useEffect(() => {
+    if (user?.email !== null) {
+      router.push("/dashboard")
+    }
+  }, [user, router])
+
   return (
+
     <div className="min-h-screen">
+
+      <DefaultSeo
+        title="NeoPDF"
+        description="Neo Era of PDF, increase your productivity with NeoPDF."
+        openGraph={{
+          type: 'website',
+          locale: 'en_IE',
+          url: 'https://www.neopdf.com.br/',
+          siteName: 'NeoPDF',
+        }}
+      />
       {/* Navigation */}
       <NavbarComponent />
 

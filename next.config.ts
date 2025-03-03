@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { hostname } from "os";
 
 const nextConfig: NextConfig = {
 
@@ -18,6 +19,17 @@ module.exports = {
       },
     },
 
+  },
+
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+        port: '',
+        pathname: '/**',
+      }
+    ]
   },
 
   serverExternalPackages: ['@react-pdf/renderer'],
