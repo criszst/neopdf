@@ -46,7 +46,7 @@ export default function AdvancedPDFViewer() {
     }
 
     fetchSession()
-  }, [])
+  }, [router, user])
 
   // Caminho para o arquivo PDF
   const filePath = `/uploads/${id}`

@@ -16,14 +16,84 @@ import {
   ChevronDown,
   LayoutGrid,
   Folder,
-  ArrowUpRight,
   Users,
-  Shield,
+  Activity,
+  Download,
+  BarChart3,
+  PieChart,
+  Calendar,
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
+import { Line } from "react-chartjs-2"
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Filler,
+  Legend,
+} from "chart.js"
+
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Filler, Legend)
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+
+// Dados simulados para o gráfico
+const chartData = {
+  labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+  datasets: [
+    {
+      label: "PDFs Uploaded",
+      data: [30, 45, 35, 50, 40, 60],
+      fill: true,
+      backgroundColor: "rgba(147, 51, 234, 0.1)",
+      borderColor: "rgba(147, 51, 234, 0.8)",
+      tension: 0.4,
+    },
+    {
+      label: "PDFs Processed",
+      data: [25, 35, 40, 45, 35, 55],
+      fill: true,
+      backgroundColor: "rgba(59, 130, 246, 0.1)",
+      borderColor: "rgba(59, 130, 246, 0.8)",
+      tension: 0.4,
+    },
+  ],
+}
+
+const chartOptions = {
+  responsive: true,
+  plugins: {
+    legend: {
+      display: true,
+      labels: {
+        color: "rgba(255, 255, 255, 0.7)",
+      },
+    },
+  },
+  scales: {
+    y: {
+      grid: {
+        color: "rgba(255, 255, 255, 0.1)",
+      },
+      ticks: {
+        color: "rgba(255, 255, 255, 0.7)",
+      },
+    },
+    x: {
+      grid: {
+        color: "rgba(255, 255, 255, 0.1)",
+      },
+      ticks: {
+        color: "rgba(255, 255, 255, 0.7)",
+      },
+    },
+  },
+}
 
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null)
@@ -82,14 +152,14 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="flex min-h-screen bg-black">
-      {/* Sidebar */}
-      <div className="w-64 bg-zinc-900/50 border-r border-zinc-800">
+    <div className="flex min-h-screen bg-[#0B0F19]">
+      {/* Sidebar melhorada */}
+      <div className="w-64 bg-[#151823] border-r border-purple-900/20">
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="p-6">
-            <div className="flex items-center">
-              <div className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent">
+            <div className="flex items-center space-x-2">
+              <div className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-purple-500 to-purple-600 bg-clip-text text-transparent">
                 Neo
               </div>
               <div className="text-2xl font-bold text-white">PDF</div>
@@ -99,72 +169,90 @@ export default function Dashboard() {
           {/* Search */}
           <div className="px-4 mb-6">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-purple-400" />
               <input
                 type="text"
                 placeholder="Search PDFs..."
-                className="w-full bg-zinc-800/50 border border-zinc-700 rounded-lg pl-10 pr-4 py-2 text-sm text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full bg-[#1C1F2E] border border-purple-500/20 rounded-lg pl-10 pr-4 py-2 text-sm text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500/40"
               />
             </div>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-4 space-y-2">
-            <button className="flex items-center space-x-3 w-full px-3 py-2 text-white rounded-lg bg-purple-500/10 border border-purple-500/20">
-              <LayoutGrid className="h-5 w-5 text-purple-400" />
-              <span>Dashboard</span>
-            </button>
-            <button className="flex items-center space-x-3 w-full px-3 py-2 text-zinc-400 hover:text-white rounded-lg hover:bg-white/5">
-              <Folder className="h-5 w-5" />
-              <span>My Files</span>
-            </button>
-            <button className="flex items-center space-x-3 w-full px-3 py-2 text-zinc-400 hover:text-white rounded-lg hover:bg-white/5">
-              <Star className="h-5 w-5" />
-              <span>Starred</span>
-            </button>
-            <button className="flex items-center space-x-3 w-full px-3 py-2 text-zinc-400 hover:text-white rounded-lg hover:bg-white/5">
-              <Clock className="h-5 w-5" />
-              <span>Recent</span>
-            </button>
+          <nav className="flex-1 px-4 space-y-1">
+            {[
+              { icon: LayoutGrid, label: "Dashboard", active: true },
+              { icon: Folder, label: "My Files" },
+              { icon: Star, label: "Starred" },
+              { icon: Clock, label: "Recent" },
+              { icon: BarChart3, label: "Analytics" },
+              { icon: Calendar, label: "Calendar" },
+              { icon: Settings, label: "Settings" },
+            ].map((item) => (
+              <button
+                key={item.label}
+                className={`flex items-center space-x-3 w-full px-3 py-2 rounded-lg transition-all duration-200 ${
+                  item.active
+                    ? "bg-purple-500/10 text-purple-400 border border-purple-500/20"
+                    : "text-zinc-400 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                <item.icon className="h-5 w-5" />
+                <span>{item.label}</span>
+              </button>
+            ))}
           </nav>
 
+          {/* Storage */}
+          <div className="p-4 mt-auto">
+            <div className="p-4 rounded-lg bg-gradient-to-br from-purple-500/10 via-purple-500/5 to-transparent border border-purple-500/20">
+              <h4 className="text-sm font-medium text-white mb-2">Storage</h4>
+              <div className="w-full h-2 bg-[#1C1F2E] rounded-full overflow-hidden">
+                <div className="h-full w-[82%] bg-gradient-to-r from-purple-400 to-purple-600 rounded-full" />
+              </div>
+              <p className="text-xs text-purple-300/70 mt-2">82% of 10GB used</p>
+            </div>
+          </div>
+
           {/* User */}
-          <div className="p-4 border-t border-zinc-800">
-            <button className="flex items-center space-x-3 w-full p-2 rounded-lg hover:bg-white/5">
+          <div className="p-4 border-t border-purple-900/20">
+            <button className="flex items-center space-x-3 w-full p-2 rounded-lg hover:bg-white/5 group">
               {user?.image ? (
                 <Image
-                  src={user.image}
+                  src={user.image || "/placeholder.svg"}
                   alt={user.name || "User"}
                   width={32}
                   height={32}
                   className="rounded-full"
                 />
               ) : (
-                <div className="h-8 w-8 rounded-full bg-purple-600 flex items-center justify-center text-white font-medium">
+                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white font-medium">
                   {user?.name?.[0]}
                 </div>
               )}
               <div className="flex-1 text-left">
-                <div className="text-sm font-medium text-white">{user?.name}</div>
+                <div className="text-sm font-medium text-white group-hover:text-purple-400 transition-colors">
+                  {user?.name}
+                </div>
                 <div className="text-xs text-zinc-400">{user?.email}</div>
               </div>
-              <ChevronDown className="h-4 w-4 text-zinc-400" />
+              <ChevronDown className="h-4 w-4 text-zinc-400 group-hover:text-purple-400 transition-colors" />
             </button>
           </div>
         </div>
       </div>
 
-      {/* Main Content */}
+      {/* Conteúdo Principal */}
       <div className="flex-1">
         {/* Header */}
-        <header className="border-b border-zinc-800 bg-zinc-900/50">
+        <header className="border-b border-purple-900/20 bg-[#151823]">
           <div className="flex items-center justify-between px-8 py-4">
-            <h1 className="text-xl font-semibold text-white">Dashboard</h1>
+            <h1 className="text-xl font-semibold text-white">Analytics Overview</h1>
             <div className="flex items-center space-x-4">
-              <button className="p-2 text-zinc-400 hover:text-white rounded-lg hover:bg-white/5">
+              <button className="p-2 text-zinc-400 hover:text-purple-400 rounded-lg hover:bg-purple-500/10 transition-all duration-200">
                 <Bell className="h-5 w-5" />
               </button>
-              <button className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+              <button className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-all duration-200 shadow-lg shadow-purple-500/20">
                 <Upload className="h-4 w-4" />
                 <span>Upload PDF</span>
               </button>
@@ -174,116 +262,182 @@ export default function Dashboard() {
 
         {/* Content */}
         <div className="p-8">
-          {/* Stats */}
-          <div className="grid grid-cols-3 gap-6 mb-8">
-            <Card className="bg-gradient-to-br from-purple-500/10 to-transparent border-purple-500/20">
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-zinc-400">Storage Used</p>
-                    <h3 className="text-2xl font-semibold text-white mt-1">82%</h3>
+          {/* Cards de Métricas */}
+          <div className="grid grid-cols-4 gap-6 mb-8">
+            {[
+              {
+                title: "Total PDFs",
+                value: "1,234",
+                change: "+12.5%",
+                icon: FileText,
+                color: "purple",
+              },
+              {
+                title: "Active Users",
+                value: "2,543",
+                change: "+8.2%",
+                icon: Users,
+                color: "blue",
+              },
+              {
+                title: "Processing Time",
+                value: "1.2s",
+                change: "-15.3%",
+                icon: Activity,
+                color: "green",
+              },
+              {
+                title: "Downloads",
+                value: "8,234",
+                change: "+22.4%",
+                icon: Download,
+                color: "pink",
+              },
+            ].map((metric, i) => (
+              <Card key={i} className="bg-[#151823] border-purple-900/20 overflow-hidden relative group">
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className={`h-12 w-12 rounded-lg bg-${metric.color}-500/10 flex items-center justify-center`}>
+                      <metric.icon className={`h-6 w-6 text-${metric.color}-400`} />
+                    </div>
+                    <span
+                      className={`text-sm font-medium ${
+                        metric.change.startsWith("+") ? "text-green-400" : "text-red-400"
+                      }`}
+                    >
+                      {metric.change}
+                    </span>
                   </div>
-                  <div className="h-12 w-12 rounded-full bg-purple-500/10 flex items-center justify-center">
-                    <ArrowUpRight className="h-6 w-6 text-purple-400" />
-                  </div>
-                </div>
-                <div className="mt-4 h-2 bg-zinc-800 rounded-full overflow-hidden">
-                  <div className="h-full w-[82%] bg-purple-500 rounded-full" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-purple-500/10 to-transparent border-purple-500/20">
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-zinc-400">Active Users</p>
-                    <h3 className="text-2xl font-semibold text-white mt-1">2,543</h3>
-                  </div>
-                  <div className="h-12 w-12 rounded-full bg-purple-500/10 flex items-center justify-center">
-                    <Users className="h-6 w-6 text-purple-400" />
-                  </div>
-                </div>
-                <div className="mt-4 flex -space-x-2">
-                  {[...Array(5)].map((_, i) => (
-                    <div
-                      key={i}
-                      className="h-8 w-8 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 border-2 border-black"
-                    />
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-purple-500/10 to-transparent border-purple-500/20">
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-zinc-400">Security Score</p>
-                    <h3 className="text-2xl font-semibold text-white mt-1">A+</h3>
-                  </div>
-                  <div className="h-12 w-12 rounded-full bg-purple-500/10 flex items-center justify-center">
-                    <Shield className="h-6 w-6 text-purple-400" />
-                  </div>
-                </div>
-                <p className="mt-4 text-sm text-zinc-400">All systems protected</p>
-              </CardContent>
-            </Card>
+                  <h3 className="text-2xl font-bold text-white mb-1">{metric.value}</h3>
+                  <p className="text-sm text-zinc-400">{metric.title}</p>
+                </CardContent>
+              </Card>
+            ))}
           </div>
 
-          {/* Recent and Actions */}
+          {/* Gráfico Principal */}
+          <Card className="mb-8 bg-[#151823] border-purple-900/20">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>PDF Analytics</CardTitle>
+                  <CardDescription>Upload and processing trends</CardDescription>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button className="px-3 py-1 text-sm text-purple-400 bg-purple-500/10 rounded-lg hover:bg-purple-500/20">
+                    Weekly
+                  </button>
+                  <button className="px-3 py-1 text-sm text-zinc-400 hover:text-purple-400 rounded-lg hover:bg-purple-500/10">
+                    Monthly
+                  </button>
+                  <button className="px-3 py-1 text-sm text-zinc-400 hover:text-purple-400 rounded-lg hover:bg-purple-500/10">
+                    Yearly
+                  </button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[300px]">
+                <Line data={chartData} options={chartOptions} />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Cards Inferiores */}
           <div className="grid grid-cols-3 gap-6">
-            <Card className="col-span-2">
+            <Card className="bg-[#151823] border-purple-900/20">
               <CardHeader>
-                <CardTitle>Recent Documents</CardTitle>
-                <CardDescription>Your recently modified PDFs</CardDescription>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Recent Activity</CardTitle>
+                  <button className="p-1 hover:bg-purple-500/10 rounded">
+                    <Menu className="h-4 w-4 text-zinc-400" />
+                  </button>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {[1, 2, 3, 4].map((i) => (
+                  {[1, 2, 3].map((i) => (
                     <div
                       key={i}
-                      className="flex items-center space-x-4 p-3 rounded-lg hover:bg-white/5 transition-colors"
+                      className="flex items-center space-x-4 p-3 rounded-lg hover:bg-purple-500/5 transition-colors group"
                     >
                       <div className="rounded-lg bg-purple-500/10 p-2 border border-purple-500/20">
                         <FileText className="h-5 w-5 text-purple-400" />
                       </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-white">Document {i}.pdf</p>
-                        <p className="text-xs text-zinc-400">Modified 2h ago • 2.4 MB</p>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-white truncate group-hover:text-purple-400 transition-colors">
+                          Document_{i}.pdf
+                        </p>
+                        <p className="text-xs text-zinc-400">Processed • 2h ago</p>
                       </div>
-                      <button className="p-2 text-zinc-400 hover:text-white rounded-lg hover:bg-white/5">
-                        <Menu className="h-4 w-4" />
-                      </button>
                     </div>
                   ))}
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-[#151823] border-purple-900/20">
               <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-                <CardDescription>Common tasks</CardDescription>
+                <div className="flex items-center justify-between">
+                  <CardTitle>PDF Types</CardTitle>
+                  <button className="p-1 hover:bg-purple-500/10 rounded">
+                    <PieChart className="h-4 w-4 text-zinc-400" />
+                  </button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {[
+                    { type: "Documents", percentage: 45, color: "purple" },
+                    { type: "Forms", percentage: 30, color: "blue" },
+                    { type: "Presentations", percentage: 25, color: "pink" },
+                  ].map((item) => (
+                    <div key={item.type} className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-zinc-400">{item.type}</span>
+                        <span className="text-white font-medium">{item.percentage}%</span>
+                      </div>
+                      <div className="h-2 bg-[#1C1F2E] rounded-full overflow-hidden">
+                        <div
+                          className={`h-full bg-${item.color}-500 rounded-full`}
+                          style={{ width: `${item.percentage}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-[#151823] border-purple-900/20">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Quick Actions</CardTitle>
+                  <button className="p-1 hover:bg-purple-500/10 rounded">
+                    <Settings className="h-4 w-4 text-zinc-400" />
+                  </button>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <button className="w-full flex items-center space-x-3 p-3 rounded-lg bg-purple-500/10 border border-purple-500/20 hover:bg-purple-500/20 transition-colors">
+                  <button className="w-full flex items-center space-x-3 p-3 rounded-lg bg-gradient-to-r from-purple-500/10 to-transparent border border-purple-500/20 hover:bg-purple-500/20 transition-all duration-200 group">
                     <Upload className="h-5 w-5 text-purple-400" />
-                    <span className="text-white">Upload PDF</span>
+                    <span className="text-white group-hover:text-purple-400 transition-colors">Upload PDF</span>
                   </button>
-                  <button className="w-full flex items-center space-x-3 p-3 rounded-lg border border-zinc-800 hover:bg-white/5 transition-colors">
-                    <Menu className="h-5 w-5 text-zinc-400" />
-                    <span className="text-white">Merge PDFs</span>
-                  </button>
-                  <button className="w-full flex items-center space-x-3 p-3 rounded-lg border border-zinc-800 hover:bg-white/5 transition-colors">
-                    <Star className="h-5 w-5 text-zinc-400" />
-                    <span className="text-white">View Favorites</span>
-                  </button>
-                  <button className="w-full flex items-center space-x-3 p-3 rounded-lg border border-zinc-800 hover:bg-white/5 transition-colors">
-                    <Settings className="h-5 w-5 text-zinc-400" />
-                    <span className="text-white">Settings</span>
-                  </button>
+                  {[
+                    { icon: Menu, label: "Merge PDFs" },
+                    { icon: Star, label: "View Favorites" },
+                    { icon: Settings, label: "Settings" },
+                  ].map((action) => (
+                    <button
+                      key={action.label}
+                      className="w-full flex items-center space-x-3 p-3 rounded-lg border border-purple-900/20 hover:bg-purple-500/10 transition-all duration-200 group"
+                    >
+                      <action.icon className="h-5 w-5 text-zinc-400 group-hover:text-purple-400 transition-colors" />
+                      <span className="text-white group-hover:text-purple-400 transition-colors">{action.label}</span>
+                    </button>
+                  ))}
                 </div>
               </CardContent>
             </Card>
@@ -293,4 +447,3 @@ export default function Dashboard() {
     </div>
   )
 }
-
