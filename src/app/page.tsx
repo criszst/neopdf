@@ -78,13 +78,13 @@ export default function Home() {
               >
                 <div className="flex justify-center gap-4">
                   <Link href="/login">
-                    <button className="group relative overflow-hidden rounded-lg bg-purple-800 px-6 py-3 text-sm font-medium text-white shadow-lg transition-all hover:scale-105"
+                    <button className="group relative overflow-hidden rounded-full bg-purple-800 px-6 py-3 text-sm font-medium text-white shadow-lg transition-all hover:scale-105"
                     >
                       <div className="absolute inset-0 bg-white/10 opacity-0 transition-opacity group-hover:opacity-100" />
                       Get Started
                     </button>
                   </Link>
-                  <button className="rounded-lg border border-white/10 bg-white/5 px-6 py-3 text-sm font-medium text-white backdrop-blur-sm transition-all hover:scale-105 hover:bg-white/10">
+                  <button className="rounded-full border border-white/10 bg-white/5 px-6 py-3 text-sm font-medium text-white backdrop-blur-sm transition-all hover:scale-105 hover:bg-white/10">
                     Learn More
                   </button>
                 </div>

@@ -3,45 +3,28 @@
 import type React from "react"
 
 import { useEffect, useState } from "react"
-import type { User } from "next-auth"
-import {
-  FileText,
-  Settings,
-  Star,
-  Clock,
-  Upload,
-  MenuIcon,
-  Search,
-  Bell,
-  ChevronDown,
-  LayoutGrid,
-  Folder,
-  Users,
-  Activity,
-  Download,
-  BarChart3,
-  PieChart,
-  Calendar,
-  X,
-} from "lucide-react"
 import { useRouter } from "next/navigation"
+
+import type { User } from "next-auth"
+
 import Image from "next/image"
+
+
+import {
+  FileText, Settings, Star, Upload, MenuIcon, Bell, Users, Activity, Download,
+  PieChart, ChevronDown,
+} from "lucide-react"
+
 import { Line } from "react-chartjs-2"
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Filler,
-  Legend,
+  Chart as ChartJS, CategoryScale, LinearScale, PointElement,
+  LineElement, Title, Tooltip, Filler, Legend,
 } from "chart.js"
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Filler, Legend)
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import SideBar from "@/components/dashboard/sidebar"
 
 
 const chartData = {
@@ -99,7 +82,7 @@ const chartOptions = {
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter()
 
   useEffect(() => {
@@ -154,120 +137,54 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#0B0F19]">
+    <div className="flex min-h-screen bg-gradient-to-b from-black to-purple-900/20">
       {/* Sidebar */}
-      <div
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-[#151823] border-r border-purple-900/20 transform ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0`}
-      >
-        <div className="flex flex-col h-full">
-          {/* Logo */}
-          <div className="p-6 flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <div className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-purple-500 to-purple-600 bg-clip-text text-transparent">
-                Neo
-              </div>
-              <div className="text-2xl font-bold text-white">PDF</div>
-            </div>
-            <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-white">
-              <X className="h-6 w-6" />
-            </button>
-          </div>
-
-          {/* Search */}
-          <div className="px-4 mb-6">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-purple-400" />
-              <input
-                type="text"
-                placeholder="Search PDFs..."
-                className="w-full bg-[#1C1F2E] border border-purple-500/20 rounded-lg pl-10 pr-4 py-2 text-sm text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500/40"
-              />
-            </div>
-          </div>
-
-          {/* Navigation */}
-          <nav className="flex-1 px-4 space-y-1">
-            {[
-              { icon: LayoutGrid, label: "Dashboard", active: true },
-              { icon: Folder, label: "My Files" },
-              { icon: Star, label: "Starred" },
-              { icon: Clock, label: "Recent" },
-              { icon: BarChart3, label: "Analytics" },
-              { icon: Calendar, label: "Calendar" },
-              { icon: Settings, label: "Settings" },
-            ].map((item) => (
-              <button
-                key={item.label}
-                className={`flex items-center space-x-3 w-full px-3 py-2 rounded-lg transition-all duration-200 ${
-                  item.active
-                    ? "bg-purple-500/10 text-purple-400 border border-purple-500/20"
-                    : "text-zinc-400 hover:text-white hover:bg-white/5"
-                }`}
-              >
-                <item.icon className="h-5 w-5" />
-                <span>{item.label}</span>
-              </button>
-            ))}
-          </nav>
-
-          {/* Storage */}
-          <div className="p-4 mt-auto">
-            <div className="p-4 rounded-lg bg-gradient-to-br from-purple-500/10 via-purple-500/5 to-transparent border border-purple-500/20">
-              <h4 className="text-sm font-medium text-white mb-2">Storage</h4>
-              <div className="w-full h-2 bg-[#1C1F2E] rounded-full overflow-hidden">
-                <div className="h-full w-[82%] bg-gradient-to-r from-purple-400 to-purple-600 rounded-full" />
-              </div>
-              <p className="text-xs text-purple-300/70 mt-2">82% of 10GB used</p>
-            </div>
-          </div>
-
-          {/* User */}
-          <div className="p-4 border-t border-purple-900/20">
-            <button className="flex items-center space-x-3 w-full p-2 rounded-lg hover:bg-white/5 group">
-              {user?.image ? (
-                <Image
-                  src={user.image || "/placeholder.svg"}
-                  alt={user.name || "User"}
-                  width={32}
-                  height={32}
-                  className="rounded-full"
-                />
-              ) : (
-                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white font-medium">
-                  {user?.name?.[0]}
-                </div>
-              )}
-              <div className="flex-1 text-left">
-                <div className="text-sm font-medium text-white group-hover:text-purple-400 transition-colors">
-                  {user?.name}
-                </div>
-                <div className="text-xs text-zinc-400">{user?.email}</div>
-              </div>
-              <ChevronDown className="h-4 w-4 text-zinc-400 group-hover:text-purple-400 transition-colors" />
-            </button>
-          </div>
-        </div>
-      </div>
+      <SideBar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <header className="border-b border-purple-900/20 bg-[#151823] sticky top-0 z-40">
+        <header className="border-b border-purple-900/20 bg-[#1a0f24] sticky top-0 z-40">
           <div className="flex items-center justify-between px-4 py-4 lg:px-8">
             <div className="flex items-center">
-              <button onClick={() => setSidebarOpen(true)} className="mr-4 text-white lg:hidden">
+              <button onClick={() => setSidebarOpen(!sidebarOpen)} className="mr-4 text-white lg:hidden">
                 <MenuIcon className="h-6 w-6" />
               </button>
-              <h1 className="text-xl font-semibold text-white">Analytics Overview</h1>
+              <h1 className="text-xl font-sans font-semibold text-white">Dashboard</h1>
             </div>
             <div className="flex items-center space-x-4">
               <button className="p-2 text-zinc-400 hover:text-purple-400 rounded-lg hover:bg-purple-500/10 transition-all duration-200">
                 <Bell className="h-5 w-5" />
               </button>
-              <button className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-all duration-200 shadow-lg shadow-purple-500/20">
+              <button className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-4 py-2 rounded-full flex items-center space-x-2 transition-all duration-200 shadow-lg shadow-purple-500/20">
                 <Upload className="h-4 w-4" />
                 <span className="hidden sm:inline">Upload PDF</span>
               </button>
+
+              <div className="p-4 border-purple-900/20 xs:hidden sm:hidden md:lg:block">
+                <button className="flex items-center space-x-3 w-full p-2 rounded-full hover:bg-white/5 group ">
+                  {user?.image ? (
+                    <Image
+                      src={user.image}
+                      alt={user.name || "User"}
+                      width={32}
+                      height={32}
+                      className="rounded-full"
+                    />
+                  ) : (
+                    <div className="h-8 w-8 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white font-medium">
+                      {user?.name?.[0]}
+                    </div>
+                  )}
+                  <div className="flex-1 text-left">
+                    <div className="text-sm font-medium text-white group-hover:text-purple-400 transition-colors">
+                      {user?.name}
+                    </div>
+                    <div className="text-xs text-zinc-400">{user?.email}</div>
+                  </div>
+                  <ChevronDown className="h-4 w-4 text-zinc-400 group-hover:text-purple-400 transition-colors" />
+                </button>
+              </div>
             </div>
           </div>
         </header>
@@ -314,9 +231,8 @@ export default function Dashboard() {
                       <metric.icon className={`h-6 w-6 text-${metric.color}-400`} />
                     </div>
                     <span
-                      className={`text-sm font-medium ${
-                        metric.change.startsWith("+") ? "text-green-400" : "text-red-400"
-                      }`}
+                      className={`text-sm font-medium ${metric.change.startsWith("+") ? "text-green-400" : "text-red-400"
+                        }`}
                     >
                       {metric.change}
                     </span>

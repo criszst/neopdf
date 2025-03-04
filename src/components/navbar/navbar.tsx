@@ -22,7 +22,7 @@ const NavbarComponent = () => {
         </div>
         <div className="hidden md:block">
           <div className="flex items-center space-x-8">
-          <Link href="/login" className="text-sm text-gray-300 hover:text-white">
+          <Link href="/dashboard/account" className="text-sm text-gray-300 hover:text-white">
               Account
             </Link>
 
@@ -38,10 +38,10 @@ const NavbarComponent = () => {
             </Link>
 
             <Link
-              href="/pdf"
+              href="/login"
               className="rounded-full bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-500"
             >
-              NEO Reader
+              Start Free
             </Link>
           </div>
         </div>

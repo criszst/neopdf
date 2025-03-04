@@ -9,7 +9,6 @@ const FeatureComparison = () => {
     // { name: "Real-time Collaboration", neopdf: true, competitor1: false, competitor2: false },
     { name: "Cloud Sync", neopdf: true, competitor1: true, competitor2: true },
     { name: "AI-Powered Search", neopdf: true, competitor1: false, competitor2: false },
-    { name: "Form Filling", neopdf: true, competitor1: false, competitor2: false },
     { name: "Image Insertion", neopdf: true, competitor1: false, competitor2: false },
     { name: "Page Management", neopdf: true, competitor1: false, competitor2: false },
   ]
