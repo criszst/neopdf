@@ -68,7 +68,7 @@ export default function Dashboard() {
     const input = document.createElement("input")
     input.type = "file"
     input.accept = ".pdf"
-    input.onchange = handleFileUpload as any
+    input.onchange = (e: Event) => handleFileUpload(e as unknown as React.ChangeEvent<HTMLInputElement>)
     input.click()
   }
 
