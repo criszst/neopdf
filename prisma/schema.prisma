@@ -1,10 +1,32 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
+model User {
+  id            String     @id @default(cuid())
+  name          String?
+  email         String?    @unique
+  emailVerified DateTime?
+  password      String?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  pdfs          PDF[]
+  activities    Activity[]
+  storageUsed   Int        @default(0) // Em bytes
+  storageLimit  Int        @default(52428800) // 50MB em bytes
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @default(now())
+
+  @@map("users")
 }
 
 model Account {
@@ -34,20 +56,54 @@ model Session {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  password      String?
-  image         String?
-  accounts      Account[]
-  sessions      Session[]
-  createdAt     DateTime  @default(now())
-
-  @@map("users")
+model PDF {
+  id          String     @id @default(uuid())
+  name        String
+  s3Key       String
+  s3Url       String
+  fileHash    String?    @unique // Hash único para identificar arquivos duplicados
+  fileSize    Int?       // Tamanho do arquivo em bytes
+  pageCount   Int?       // Número de páginas
+  fileType    PDFType    @default(DOCUMENT)
+  isStarred   Boolean    @default(false)
+  viewCount   Int        @default(0)
+  lastViewed  DateTime?
+  userId      String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  activities  Activity[]
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+enum PDFType {
+  DOCUMENT
+  FORM
+  PRESENTATION
+  BOOK
+  REPORT
+  OTHER
+}
+
+model Activity {
+  id        String       @id @default(uuid())
+  type      ActivityType
+  details   String?      @db.Text
+  userId    String
+  pdfId     String?
+  createdAt DateTime     @default(now())
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pdf       PDF?         @relation(fields: [pdfId], references: [id], onDelete: SetNull)
+}
+
+enum ActivityType {
+  UPLOAD
+  VIEW
+  DOWNLOAD
+  DELETE
+  STAR
+  UNSTAR
+  SHARE
+}
 
 model VerificationToken {
   identifier String
@@ -56,3 +112,4 @@ model VerificationToken {
 
   @@unique([identifier, token])
 }
+

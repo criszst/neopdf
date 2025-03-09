@@ -1,69 +1,104 @@
-import React from "react"
-import { type LucideIcon } from 'lucide-react'
-import { motion } from "framer-motion"
+"use client"
 
-interface MetricCardProps {
-  title: string
-  value: string
-  change: string
-  icon: LucideIcon
-  color: "purple" | "blue" | "green" | "pink"
+import React, { useEffect, useState } from "react"
+import { FileText, Users, Clock, HardDrive } from 'lucide-react'
+import { motion } from "framer-motion"
+import MetricCard from "./metric"
+
+interface UserStats {
+  totalPdfs: number
+  starredPdfs: number
+  storage: {
+    used: number
+    limit: number
+    percentage: number
+  }
 }
 
-const MetricCard: React.FC<MetricCardProps> = ({ title, value, change, icon: Icon, color }) => {
-  const isPositive = change.startsWith("+")
-  
-  const colorMap = {
-    purple: {
-      bg: "from-purple-500/10 to-purple-600/5",
-      iconBg: "bg-purple-500/10",
-      iconColor: "text-purple-400",
-      changeColor: isPositive ? "text-green-400" : "text-red-400"
-    },
-    blue: {
-      bg: "from-blue-500/10 to-blue-600/5",
-      iconBg: "bg-blue-500/10",
-      iconColor: "text-blue-400",
-      changeColor: isPositive ? "text-green-400" : "text-red-400"
-    },
-    green: {
-      bg: "from-green-500/10 to-green-600/5",
-      iconBg: "bg-green-500/10",
-      iconColor: "text-green-400",
-      changeColor: isPositive ? "text-green-400" : "text-red-400"
-    },
-    pink: {
-      bg: "from-pink-500/10 to-pink-600/5",
-      iconBg: "bg-pink-500/10",
-      iconColor: "text-pink-400",
-      changeColor: isPositive ? "text-green-400" : "text-red-400"
+const MetricCards = () => {
+  const [stats, setStats] = useState<UserStats | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    async function fetchStats() {
+      try {
+        setLoading(true)
+        const response = await fetch('/api/user/stats')
+        
+        if (!response.ok) {
+          throw new Error('Falha ao buscar estatísticas')
+        }
+        
+        const data = await response.json()
+        setStats(data)
+      } catch (error: any) {
+        console.error('Erro ao buscar estatísticas:', error)
+        setError(error.message)
+      } finally {
+        setLoading(false)
+      }
     }
+    
+    fetchStats()
+  }, [])
+
+  // Função para formatar bytes em unidades legíveis
+  const formatBytes = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes'
+    
+    const k = 1024
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
 
-  const colors = colorMap[color]
+  const metrics = [
+    {
+      title: "Total PDFs",
+      value: stats ? stats.totalPdfs.toString() : "...",
+      change: "+12.5%",
+      icon: FileText,
+      color: "purple",
+    },
+    {
+      title: "PDFs Favoritos",
+      value: stats ? stats.starredPdfs.toString() : "...",
+      change: "+8.2%",
+      icon: Users,
+      color: "blue",
+    },
+    {
+      title: "Tempo Médio",
+      value: "1.2s",
+      change: "-15.3%",
+      icon: Clock,
+      color: "green",
+    },
+    {
+      title: "Armazenamento",
+      value: stats ? formatBytes(stats.storage.used) : "...",
+      change: stats ? `${stats.storage.percentage.toFixed(1)}%` : "...",
+      icon: HardDrive,
+      color: "pink",
+    },
+  ]
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className={`bg-[#151823]/80 backdrop-blur-sm rounded-xl border border-purple-900/20 overflow-hidden relative group`}
-    >
-      <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
-      <div className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className={`h-12 w-12 rounded-lg ${colors.iconBg} flex items-center justify-center border border-purple-500/20`}>
-            <Icon className={`h-6 w-6 ${colors.iconColor}`} />
-          </div>
-          <span className={`text-sm font-medium ${colors.changeColor}`}>
-            {change}
-          </span>
-        </div>
-        <h3 className="text-3xl font-bold text-white mb-1">{value}</h3>
-        <p className="text-sm text-zinc-400">{title}</p>
-      </div>
-    </motion.div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
+      {metrics.map((metric, index) => (
+        <motion.div
+          key={metric.title}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: index * 0.1 }}
+        >
+          <MetricCard />
+        </motion.div>
+      ))}
+    </div>
   )
 }
 
-export default MetricCard
+export default MetricCards

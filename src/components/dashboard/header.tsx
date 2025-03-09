@@ -37,6 +37,7 @@ const Header: React.FC<HeaderProps> = ({ user, sidebarOpen, setSidebarOpen, onUp
           </button>
           <button
             onClick={onUpload}
+            onChange={onUpload}
             className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-all duration-200 shadow-lg shadow-purple-500/20"
           >
             <Upload className="h-4 w-4" />
