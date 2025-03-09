@@ -5,8 +5,13 @@ import { PrismaClient } from "@prisma/client"
 
 const prisma = new PrismaClient()
 
-export async function GET(req: NextRequest, context: { params: { id: string } }) {
-  const { id } = await context.params
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url)
+  const id = searchParams.get("id")
+
+  if (!id) {
+    return NextResponse.json({ error: "Missing PDF ID" }, { status: 400 })
+  }
 
   try {
     const session = await getServerSession(authOptions)
@@ -37,14 +42,18 @@ export async function GET(req: NextRequest, context: { params: { id: string } })
 
     return NextResponse.json(pdf)
   } catch (error: any) {
-    console.error("Error buscando o pdf:", error)
+    console.error("Error buscando o PDF:", error)
     return NextResponse.json({ error: `Erro buscando o PDF: ${error.message}` }, { status: 500 })
   }
 }
 
-export async function DELETE(req: NextRequest, context: { params: { id: string } }) {
-  const id = context.params.id
+export async function DELETE(req: NextRequest) {
+  const { searchParams } = new URL(req.url)
+  const id = searchParams.get("id")
 
+  if (!id) {
+    return NextResponse.json({ error: "Missing PDF ID" }, { status: 400 })
+  }
 
   try {
     const session = await getServerSession(authOptions)
@@ -58,7 +67,7 @@ export async function DELETE(req: NextRequest, context: { params: { id: string }
     })
 
     if (!user) {
-      return NextResponse.json({ error: "User nao ecnontrado" }, { status: 404 })
+      return NextResponse.json({ error: "User não encontrado" }, { status: 404 })
     }
 
     const pdf = await prisma.pDF.findUnique({
@@ -66,11 +75,11 @@ export async function DELETE(req: NextRequest, context: { params: { id: string }
     })
 
     if (!pdf) {
-      return NextResponse.json({ error: "PDF nao encontrado" }, { status: 404 })
+      return NextResponse.json({ error: "PDF não encontrado" }, { status: 404 })
     }
 
     if (pdf.userId !== user.id) {
-      return NextResponse.json({ error: "User nao possui esse pdf" }, { status: 403 })
+      return NextResponse.json({ error: "User não possui esse PDF" }, { status: 403 })
     }
 
     await prisma.pDF.delete({
@@ -79,8 +88,7 @@ export async function DELETE(req: NextRequest, context: { params: { id: string }
 
     return NextResponse.json({ success: true })
   } catch (error: any) {
-    console.error("Erro ao deletar o pdf:", error)
-    return NextResponse.json({ error: `erro ao deletar o pdf: ${error.message}` }, { status: 500 })
+    console.error("Erro ao deletar o PDF:", error)
+    return NextResponse.json({ error: `Erro ao deletar o PDF: ${error.message}` }, { status: 500 })
   }
 }
-
