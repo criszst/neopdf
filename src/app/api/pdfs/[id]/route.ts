@@ -43,8 +43,9 @@ export async function GET(req: NextRequest) {
   }
 }
 
-export async function DELETE(req: NextRequest, context: RouteContext<{ id: string }>) {
-  const { id } = context.params
+export async function DELETE(req: NextRequest) {
+  const { searchParams } = new URL(req.url)
+  const id = searchParams.get('id') ?? undefined
 
   try {
     const session = await getServerSession(authOptions)
