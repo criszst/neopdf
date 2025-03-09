@@ -7,7 +7,7 @@ const prisma = new PrismaClient()
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
-  const id = searchParams.get('id')
+  const id = searchParams.get('id') ?? undefined;
 
   try {
     const session = await getServerSession(authOptions)
