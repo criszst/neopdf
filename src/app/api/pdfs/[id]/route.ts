@@ -2,10 +2,13 @@ import { type NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/app/api/auth/auth"
 import { PrismaClient } from "@prisma/client"
+import type { RouteContext } from "next"
 
 const prisma = new PrismaClient()
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, context: RouteContext<{ id: string }>) {
+  const { id } = context.params
+
   try {
     const session = await getServerSession(authOptions)
 
@@ -22,14 +25,13 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     }
 
     const pdf = await prisma.pDF.findUnique({
-      where: { id: params.id },
+      where: { id },
     })
 
     if (!pdf) {
       return NextResponse.json({ error: "PDF not found" }, { status: 404 })
     }
 
-    // Check if the user owns this PDF
     if (pdf.userId !== user.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 })
     }
@@ -41,7 +43,9 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, context: RouteContext<{ id: string }>) {
+  const { id } = context.params
+
   try {
     const session = await getServerSession(authOptions)
 
@@ -58,21 +62,19 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     }
 
     const pdf = await prisma.pDF.findUnique({
-      where: { id: params.id },
+      where: { id },
     })
 
     if (!pdf) {
       return NextResponse.json({ error: "PDF not found" }, { status: 404 })
     }
 
-    // Check if the user owns this PDF
     if (pdf.userId !== user.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 })
     }
 
-    // Delete from database
     await prisma.pDF.delete({
-      where: { id: params.id },
+      where: { id },
     })
 
     return NextResponse.json({ success: true })
