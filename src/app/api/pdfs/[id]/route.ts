@@ -29,8 +29,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       return NextResponse.json({ error: "PDF not found" }, { status: 404 })
     }
 
-    // Check if the user owns this PDF - THIS WAS THE ERROR
-    // You were comparing pdf.id with user.id instead of pdf.userId
+    // Check if the user owns this PDF
     if (pdf.userId !== user.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 })
     }
@@ -82,4 +81,3 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     return NextResponse.json({ error: `Error deleting PDF: ${error.message}` }, { status: 500 })
   }
 }
-
