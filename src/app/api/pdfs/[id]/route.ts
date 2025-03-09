@@ -5,12 +5,19 @@ import { PrismaClient } from "@prisma/client"
 
 const prisma = new PrismaClient()
 
+// Função para extrair o `id` da URL
+function extractIdFromUrl(url: string): string | null {
+  // Divide a URL em partes usando '/' como delimitador
+  const parts = url.split('/')
+  // O `id` é o último segmento da URL
+  return parts[parts.length - 1] || null
+}
+
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url)
-  const id = searchParams.get('id');
-  
+  const id = extractIdFromUrl(req.url)
+
   if (!id) {
-  return NextResponse.json({ error: "Invalid PDF ID" }, { status: 400 });
+    return NextResponse.json({ error: "Missing PDF ID" }, { status: 400 })
   }
 
   try {
@@ -42,14 +49,17 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(pdf)
   } catch (error: any) {
-    console.error("Error fetching PDF:", error)
-    return NextResponse.json({ error: `Error fetching PDF: ${error.message}` }, { status: 500 })
+    console.error("Error buscando o PDF:", error)
+    return NextResponse.json({ error: `Erro buscando o PDF: ${error.message}` }, { status: 500 })
   }
 }
 
 export async function DELETE(req: NextRequest) {
-  const { searchParams } = new URL(req.url)
-  const id = searchParams.get('id') ?? undefined
+  const id = extractIdFromUrl(req.url)
+
+  if (!id) {
+    return NextResponse.json({ error: "Missing PDF ID" }, { status: 400 })
+  }
 
   try {
     const session = await getServerSession(authOptions)
@@ -63,7 +73,7 @@ export async function DELETE(req: NextRequest) {
     })
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 })
+      return NextResponse.json({ error: "User não encontrado" }, { status: 404 })
     }
 
     const pdf = await prisma.pDF.findUnique({
@@ -71,11 +81,11 @@ export async function DELETE(req: NextRequest) {
     })
 
     if (!pdf) {
-      return NextResponse.json({ error: "PDF not found" }, { status: 404 })
+      return NextResponse.json({ error: "PDF não encontrado" }, { status: 404 })
     }
 
     if (pdf.userId !== user.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 })
+      return NextResponse.json({ error: "User não possui esse PDF" }, { status: 403 })
     }
 
     await prisma.pDF.delete({
@@ -84,7 +94,7 @@ export async function DELETE(req: NextRequest) {
 
     return NextResponse.json({ success: true })
   } catch (error: any) {
-    console.error("Error deleting PDF:", error)
-    return NextResponse.json({ error: `Error deleting PDF: ${error.message}` }, { status: 500 })
+    console.error("Erro ao deletar o PDF:", error)
+    return NextResponse.json({ error: `Erro ao deletar o PDF: ${error.message}` }, { status: 500 })
   }
 }
