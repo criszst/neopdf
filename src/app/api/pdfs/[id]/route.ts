@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/app/api/auth/auth"
 import { PrismaClient } from "@prisma/client"
-import type { RouteContext } from "next"
+import RouteContext from "next"
 
 const prisma = new PrismaClient()
 
