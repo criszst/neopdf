@@ -5,9 +5,17 @@ import { PrismaClient } from "@prisma/client"
 
 const prisma = new PrismaClient()
 
+// Função para extrair o `id` da URL
+function extractIdFromUrl(url: string): string | null {
+  // Divide a URL em partes usando '/' como delimitador
+  const parts = url.split('/')
+  // O `id` é o último segmento da URL
+  return parts[parts.length - 1] || null
+}
+
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url)
-  const id = searchParams.get('id')
+  // Extrai o `id` da URL
+  const id = extractIdFromUrl(req.url)
 
   if (!id) {
     return NextResponse.json({ error: "Missing PDF ID" }, { status: 400 })
@@ -48,8 +56,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const { searchParams } = new URL(req.url)
-  const id = searchParams.get('id')
+  // Extrai o `id` da URL
+  const id = extractIdFromUrl(req.url)
 
   if (!id) {
     return NextResponse.json({ error: "Missing PDF ID" }, { status: 400 })
