@@ -121,7 +121,7 @@ export default function Dashboard() {
         {/* Content */}
         <div className="flex-1 p-4 lg:p-8 overflow-auto">
   
-          {/* <MetricCards /> */}
+           <MetricCards />
 
           {/* Analytics Chart */}
           <div className="mb-8">
