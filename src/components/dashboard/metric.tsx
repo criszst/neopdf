@@ -94,7 +94,6 @@ const MetricCards = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: index * 0.1 }}
         >
-          <MetricCard />
         </motion.div>
       ))}
     </div>
