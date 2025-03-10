@@ -7,7 +7,7 @@ const prisma = new PrismaClient()
 
 interface MonthlyActivity {
   month: Date
-  count: number
+  count: bigint
 }
 
 export async function GET(req: NextRequest) {
@@ -36,25 +36,29 @@ export async function GET(req: NextRequest) {
     // Formatar os dados para o gráfico
     const pdfTypes = pdfTypeCount.map((item) => ({
       type: item.fileType,
-      count: item._count,
+      count: Number(item._count), // Convertendo BigInt para Number
     }))
 
     // Contar total de PDFs
-    const totalPdfs = await prisma.pDF.count({
-      where: { userId: user.id },
-    })
+    const totalPdfs = Number(
+      await prisma.pDF.count({
+        where: { userId: user.id },
+      })
+    )
 
     // Contar PDFs favoritados
-    const starredPdfs = await prisma.pDF.count({
-      where: {
-        userId: user.id,
-        isStarred: true,
-      },
-    })
+    const starredPdfs = Number(
+      await prisma.pDF.count({
+        where: {
+          userId: user.id,
+          isStarred: true,
+        },
+      })
+    )
 
     // Calcular espaço de armazenamento usado
-    const storageUsed = user.storageUsed || 0
-    const storageLimit = user.storageLimit || 1 // Evita divisão por zero
+    const storageUsed = Number(user.storageUsed) || 0
+    const storageLimit = Number(user.storageLimit) || 1 // Evita divisão por zero
     const storagePercentage = (storageUsed / storageLimit) * 100
 
     // Buscar atividades por mês (últimos 6 meses)
@@ -64,8 +68,8 @@ export async function GET(req: NextRequest) {
     const monthlyActivities = await prisma.$queryRaw<MonthlyActivity[]>`
       SELECT
         DATE_TRUNC('month', "createdAt") AS month,
-        COUNT(*) AS count
-      FROM "PDF"  -- Nome correto da tabela
+        COUNT(*)::bigint AS count -- Força COUNT(*) como bigint
+      FROM "PDF"
       WHERE "userId" = ${user.id}
         AND "createdAt" >= ${sixMonthsAgo}
       GROUP BY DATE_TRUNC('month', "createdAt")
@@ -86,7 +90,7 @@ export async function GET(req: NextRequest) {
 
       return {
         month: months[monthIndex],
-        count: found ? found.count : 0,
+        count: found ? Number(found.count) : 0, // Convertendo BigInt para Number
       }
     }).reverse()
 
