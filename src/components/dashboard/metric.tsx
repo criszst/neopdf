@@ -53,11 +53,38 @@ const MetricCards = () => {
   }
 
   if (loading) {
-    return <p>Carregando...</p>
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.1 }}
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6"
+      >
+        {[...Array(4)].map((_, index) => (
+          <div
+            key={index}
+            className="bg-[#151823]/80 backdrop-blur-sm rounded-xl border border-purple-900/20 p-6 flex items-center justify-center h-32 animate-pulse"
+          >
+            <div className="h-10 w-10 bg-purple-600/20 rounded-full" />
+          </div>
+        ))}
+      </motion.div>
+    )
   }
 
   if (error) {
-    return <p className="text-red-500">Erro: {error}</p>
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.1 }}
+        className="bg-[#151823]/80 backdrop-blur-sm rounded-xl border border-purple-900/20 p-6"
+      >
+        <div className="h-[100px] w-full flex items-center justify-center">
+          <div className="text-red-400 text-center">Erro ao carregar estatísticas: {error}</div>
+        </div>
+      </motion.div>
+    )
   }
 
   const metrics = [
@@ -92,26 +119,27 @@ const MetricCards = () => {
   ]
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay: 0.1 }}
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6"
+    >
       {metrics.map((metric, index) => (
         <motion.div
           key={metric.title}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: index * 0.1 }}
-          className={`p-4 rounded-lg shadow-md bg-${metric.color}-100`}
+          className="bg-[#151823]/80 backdrop-blur-sm rounded-xl border border-purple-900/20 p-6 flex flex-col items-center text-white"
         >
-          <div className="flex items-center space-x-4">
-            <metric.icon className={`text-${metric.color}-500 w-6 h-6`} />
-            <div>
-              <p className="text-lg font-semibold">{metric.title}</p>
-              <p className="text-2xl font-bold">{metric.value}</p>
-              <p className="text-sm text-gray-600">{metric.change}</p>
-            </div>
-          </div>
+          <metric.icon className="w-10 h-10 mb-4 text-purple-500" />
+          <p className="text-lg font-semibold">{metric.title}</p>
+          <p className="text-2xl font-bold">{metric.value}</p>
+          <p className="text-sm text-zinc-400">{metric.change}</p>
         </motion.div>
       ))}
-    </div>
+    </motion.div>
   )
 }
 
