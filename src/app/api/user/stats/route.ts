@@ -65,10 +65,10 @@ export async function GET(req: NextRequest) {
       SELECT
         DATE_TRUNC('month', "createdAt") AS month,
         COUNT(*) AS count
-      FROM "pDF"
+      FROM "PDF"  -- Nome correto da tabela
       WHERE "userId" = ${user.id}
         AND "createdAt" >= ${sixMonthsAgo}
-      GROUP BY month
+      GROUP BY DATE_TRUNC('month', "createdAt")
       ORDER BY month DESC;
     `
 
