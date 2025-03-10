@@ -6,9 +6,8 @@ import { PrismaClient } from "@prisma/client"
 const prisma = new PrismaClient()
 
 interface MonthlyActivity {
-  month: string;
-  year: string;
-  count: number;
+  month: Date
+  count: number
 }
 
 export async function GET(req: NextRequest) {
@@ -54,8 +53,8 @@ export async function GET(req: NextRequest) {
     })
 
     // Calcular espaço de armazenamento usado
-    const storageUsed = user.storageUsed
-    const storageLimit = user.storageLimit
+    const storageUsed = user.storageUsed || 0
+    const storageLimit = user.storageLimit || 1 // Evita divisão por zero
     const storagePercentage = (storageUsed / storageLimit) * 100
 
     // Buscar atividades por mês (últimos 6 meses)
@@ -65,34 +64,31 @@ export async function GET(req: NextRequest) {
     const monthlyActivities = await prisma.$queryRaw<MonthlyActivity[]>`
       SELECT
         DATE_TRUNC('month', "createdAt") AS month,
-        DATE_TRUNC('year', "createdAt") AS year,
         COUNT(*) AS count
-      FROM "Activity"
+      FROM "pDF"
       WHERE "userId" = ${user.id}
         AND "createdAt" >= ${sixMonthsAgo}
-      GROUP BY month, year
+      GROUP BY month
       ORDER BY month DESC;
     `
 
-    // Formatar os dados para o gráfico
+    // Criando um array com os últimos 6 meses
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-    const currentMonth = new Date().getMonth()
-    const currentYear = new Date().getFullYear()
+    const activityData = Array.from({ length: 6 }).map((_, i) => {
+      const date = new Date()
+      date.setMonth(date.getMonth() - i)
 
-    const activityData = Array(6)
-      .fill(0)
-      .map((_, i) => {
-        const month = (currentMonth - i + 12) % 12
-        const year = currentMonth - i < 0 ? currentYear - 1 : currentYear
-
-        const found = monthlyActivities.find((item) => item.month === `${year}-${month + 1}`)
-
-        return {
-          month: months[month],
-          count: found ? found.count : 0,
-        }
+      const monthIndex = date.getMonth()
+      const found = monthlyActivities.find((item) => {
+        const itemDate = new Date(item.month)
+        return itemDate.getMonth() === monthIndex && itemDate.getFullYear() === date.getFullYear()
       })
-      .reverse()
+
+      return {
+        month: months[monthIndex],
+        count: found ? found.count : 0,
+      }
+    }).reverse()
 
     return NextResponse.json({
       totalPdfs,
