@@ -25,29 +25,30 @@ const MetricCards = () => {
         setLoading(true)
         const response = await fetch("/api/user/stats")
 
-        if (!response.ok) {
-          throw new Error("Falha ao buscar estatísticas")
-        }
+        if (!response.ok) {  
+          throw new Error("Falha ao buscar estatísticas")  
+        }  
 
-        const data = await response.json()
-        setStats(data)
-      } catch (error: any) {
-        console.error("Erro ao buscar estatísticas:", error)
-        setError(error.message)
-      } finally {
-        setLoading(false)
-      }
-    }
+        const data = await response.json()  
+        setStats(data)  
+      } catch (error: any) {  
+        console.error("Erro ao buscar estatísticas:", error)  
+        setError(error.message)  
+      } finally {  
+        setLoading(false)  
+      }  
+    }  
 
     fetchStats()
+
   }, [])
 
   const formatBytes = (bytes: number): string => {
     if (bytes === 0) return "0 Bytes"
 
-    const k = 1024
-    const sizes = ["Bytes", "KB", "MB", "GB", "TB"]
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    const k = 1024  
+    const sizes = ["Bytes", "KB", "MB", "GB", "TB"]  
+    const i = Math.floor(Math.log(bytes) / Math.log(k))  
 
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
   }
@@ -61,11 +62,11 @@ const MetricCards = () => {
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6"
       >
         {[...Array(4)].map((_, index) => (
-          <div
-            key={index}
-            className="bg-[#151823]/80 backdrop-blur-sm rounded-xl border border-purple-900/20 p-6 flex items-center justify-center h-32 animate-pulse"
+          <div  
+            key={index}  
+            className="bg-[#151823]/80 backdrop-blur-sm rounded-xl border border-purple-900/20 p-4 sm:p-6 flex items-center justify-center h-24 sm:h-32 animate-pulse"  
           >
-            <div className="h-10 w-10 bg-purple-600/20 rounded-full" />
+            <div className="h-8 sm:h-10 w-8 sm:w-10 bg-purple-600/20 rounded-full" />
           </div>
         ))}
       </motion.div>
@@ -131,12 +132,12 @@ const MetricCards = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: index * 0.1 }}
-          className="bg-[#151823]/80 backdrop-blur-sm rounded-xl border border-purple-900/20 p-6 flex flex-col items-center text-white"
+          className="bg-[#151823]/80 backdrop-blur-sm rounded-xl border border-purple-900/20 p-4 sm:p-6 flex flex-col items-center text-white"
         >
-          <metric.icon className="w-10 h-10 mb-4 text-purple-500" />
-          <p className="text-lg font-semibold">{metric.title}</p>
-          <p className="text-2xl font-bold">{metric.value}</p>
-          <p className="text-sm text-zinc-400">{metric.change}</p>
+          <metric.icon className="w-8 sm:w-10 h-8 sm:h-10 mb-4 text-purple-500" />
+          <p className="text-sm sm:text-lg font-semibold">{metric.title}</p>
+          <p className="text-xl sm:text-2xl font-bold">{metric.value}</p>
+          <p className="text-xs sm:text-sm text-zinc-400">{metric.change}</p>
         </motion.div>
       ))}
     </motion.div>
