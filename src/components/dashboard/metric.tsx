@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react"
 import { FileText, Users, Clock, HardDrive } from 'lucide-react'
 import { motion } from "framer-motion"
-import MetricCard from "./metric"
 
 interface UserStats {
   totalPdfs: number
