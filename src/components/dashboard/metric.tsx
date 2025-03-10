@@ -124,7 +124,7 @@ const MetricCards = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.1 }}
-      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-6 mt-3 mb-4"
+      className="grid grid-cols-1 sm:grid-cols-2 xs:grid-cols-2 lg:grid-cols-3 gap-2 lg:gap-6 mt-3 mb-4"
     >
       {metrics.map((metric, index) => (
         <motion.div
@@ -134,9 +134,9 @@ const MetricCards = () => {
           transition={{ duration: 0.3, delay: index * 0.1 }}
           className="bg-[#151823]/80 backdrop-blur-sm rounded-xl border border-purple-900/20 p-4 sm:p-6 flex flex-col items-center text-white"
         >
-          <metric.icon className="w-8 sm:w-10 h-8 sm:h-10 mb-4 text-purple-500" />
+          <metric.icon className="w-8 sm:w-8 h-8 sm:h-8 mb-4 text-purple-500" />
           <p className="text-sm sm:text-lg font-semibold">{metric.title}</p>
-          <p className="text-xl sm:text-2xl font-bold">{metric.value}</p>
+          <p className="text-xl sm:text-1xl font-bold">{metric.value}</p>
           <p className="text-xs sm:text-sm text-zinc-400">{metric.change}</p>
         </motion.div>
       ))}
