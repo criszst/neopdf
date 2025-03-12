@@ -14,6 +14,8 @@ import PdfTypes from "@/components/dashboard/types"
 import QuickActions from "@/components/dashboard/qactions"
 import FileUpload from "@/components/animations/FileUpload"
 import PDFList from "@/components/dashboard/pdfs"
+import { Upload } from "lucide-react"
+import AnimatedAlert from "@/components/ui/alert"
 
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null)
@@ -21,6 +23,9 @@ export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [pdf, setPdf] = useState([])
   const [showUploadModal, setShowUploadModal] = useState(false)
+
+  const [selectedPdf, setSelectedPdf] = useState<string | null>(null);
+  const [showAlert, setShowAlert] = useState(false);
 
   const router = useRouter()
 
@@ -43,7 +48,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push("/login") 
+      router.push("/login")
     }
   }, [loading, user, router])
 
@@ -54,6 +59,7 @@ export default function Dashboard() {
         if (!res.ok) throw new Error("Failed to fetch PDFs")
         const data = await res.json()
         setPdf(data)
+        console.log(pdf)
       } catch (error) {
         console.error("Error fetching PDFs:", error)
       }
@@ -72,15 +78,20 @@ export default function Dashboard() {
     setShowUploadModal(false)
   }
 
-  const handleDeletePDF = async (id: string) => {
-    if (!confirm("Tem certeza que deseja excluir este PDF?")) return
+  const handleDeleteRequest = (id: string) => {
+    setSelectedPdf(id);
+    setShowAlert(true);
+  };
+
+  const handleDeletePDF = async () => {
+    if (!selectedPdf) return;
 
     try {
-      const res = await fetch(`/api/pdf/${id}`, {
+      const res = await fetch(`/api/pdf/${selectedPdf}`, {
         method: "DELETE",
-      })
+      });
 
-      if (!res.ok) throw new Error("Failed to delete PDF")
+      if (!res.ok) throw new Error("Failed to delete PDF");
 
       // Registrar atividade
       await fetch("/api/activity", {
@@ -90,16 +101,20 @@ export default function Dashboard() {
         },
         body: JSON.stringify({
           type: "DELETE",
-          pdfId: id,
+          pdfId: selectedPdf,
         }),
-      })
+      });
 
       // Atualizar lista de PDFs
-      setPdf(pdf.filter((pdf: any) => pdf.id !== id))
+      setPdf((prev) => prev.filter((pdf: any) => pdf.id !== selectedPdf))
+ 
     } catch (error) {
-      console.error("Error deleting PDF:", error)
+      console.error("Error deleting PDF:", error);
+    } finally {
+      setShowAlert(false);
+      setSelectedPdf(null);
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -120,15 +135,7 @@ export default function Dashboard() {
 
         {/* Content */}
         <div className="flex-1 p-4 lg:p-8 overflow-auto">
-  
-           <MetricCards />
 
-          {/* Analytics Chart */}
-          <div className="mb-8">
-            <AnalyticsChart />
-          </div>
-
-          {/* PDFs List */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -136,13 +143,39 @@ export default function Dashboard() {
             className="mb-8"
           >
             <div className="bg-[#151823]/80 backdrop-blur-sm rounded-xl border border-purple-900/20 p-6">
+              <h2 className="text-lg font-bold text-white mb-4">PDFs</h2>
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-white">Seus PDFs</h2>
-                <FileUpload className="w-auto" showLabel={false} />
+
+                <FileUpload
+                  onUploadComplete={handleUploadComplete}
+                  className=" lg:block w-[100%]"
+                  showLabel={true}
+                />
               </div>
-              <PDFList pdfs={pdf} onDelete={handleDeletePDF} />
+
+              {showAlert && (
+                <AnimatedAlert
+                  title="Tem certeza?"
+                  message="Essa ação não pode ser desfeita. Deseja realmente excluir este PDF?"
+                  confirmText="Sim, excluir"
+                  cancelText="Cancelar"
+                  onConfirm={handleDeletePDF}
+                  onCancel={() => setShowAlert(false)}
+                />
+              )}
+
+              <PDFList pdfs={pdf} onDelete={handleDeleteRequest} />
             </div>
           </motion.div>
+
+
+          <MetricCards />
+
+          {/* Analytics Chart */}
+          <div className="mb-8">
+            <AnalyticsChart />
+          </div>
+
 
           {/* Bottom Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

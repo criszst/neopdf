@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useRef } from "react"
+import { useState, useRef, ReactNode, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Upload, Check, AlertCircle, X, Loader2, Info } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -21,6 +21,8 @@ export default function FileUpload({ onUploadComplete, className = "", showLabel
   const [fileName, setFileName] = useState("")
   const [isDragging, setIsDragging] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const [data, setData] = useState<any>(null)
 
   const router = useRouter()
 
@@ -42,7 +44,7 @@ export default function FileUpload({ onUploadComplete, className = "", showLabel
     // Validate file size (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
       setUploadStatus("error")
-      setErrorMessage("O arquivo não pode ser maior que 10MB")
+      setErrorMessage("O arquivo não pode ser maior que 20MB")
       return
     }
 
@@ -105,10 +107,7 @@ export default function FileUpload({ onUploadComplete, className = "", showLabel
         }),
       })
 
-      // Redirecionar para a página do PDF
-      setTimeout(() => {
-        router.push(data.url)
-      }, 1000)
+      setData(data)
     } catch (error: any) {
       console.error("Upload error:", error)
       setUploadStatus("error")
@@ -150,6 +149,31 @@ export default function FileUpload({ onUploadComplete, className = "", showLabel
       await processFile(files[0])
     }
   }
+
+  useEffect(() => {
+    const fetchCases = () => {
+      const uploadingCases = {
+        idle: () => router.push("#"),
+        uploading: () => setUploadProgress(0),
+        success: () => router.push(`/pdf/${data.id}`),
+        error: () => {
+          router.push("#")
+          setIsUploading(false)
+          resetUpload()
+        },
+        duplicate: () => {
+          setIsUploading(false)
+          resetUpload()
+          router.push("#")
+        },
+      } as const
+      
+      return uploadingCases[uploadStatus] 
+      
+    }
+
+    fetchCases()
+  }, [uploadStatus])
 
   return (
     <div className={`relative ${className}`}>
@@ -223,12 +247,14 @@ export default function FileUpload({ onUploadComplete, className = "", showLabel
                 </div>
               )}
 
+
+
               {uploadStatus === "success" && (
                 <div className="flex items-center gap-1 text-green-400 text-xs">
                   <Check size={14} />
                   <span>Upload completo</span>
                 </div>
-              )}
+              )  }
 
               {uploadStatus === "duplicate" && (
                 <div className="flex items-center gap-1 text-blue-400 text-xs">

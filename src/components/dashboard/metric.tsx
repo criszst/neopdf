@@ -124,7 +124,7 @@ const MetricCards = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.1 }}
-      className="grid grid-cols-1 sm:grid-cols-2 xs:grid-cols-2 lg:grid-cols-3 gap-2 lg:gap-6 mt-3 mb-4"
+      className="grid grid-cols-1 sm:grid-cols-4 xs:grid-cols-4 lg:grid-cols-2 gap-3 lg:gap-6 mt-3 mb-4"
     >
       {metrics.map((metric, index) => (
         <motion.div

@@ -22,8 +22,14 @@ export async function GET(req: NextRequest) {
     }
 
     const pdfs = await prisma.pDF.findMany({
-      where: { id: user.id },
-      orderBy: { createdAt: "desc" },
+      where: { userId: user.id },
+      include: {
+        user: {
+          select: {
+            name: true,
+          },
+        },
+      }
     })
 
     return NextResponse.json(pdfs)
