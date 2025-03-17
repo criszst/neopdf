@@ -1,13 +1,19 @@
 "use client"
 
-import type React from "react"
-
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
 import type { User } from "next-auth"
 import { Document, Page, pdfjs } from "react-pdf"
-import { Download, Share, Star, ChevronLeft, ChevronRight, Plus, Minus, Maximize, ArrowLeft } from "lucide-react"
-import Image from "next/image"
+import { motion, AnimatePresence } from "framer-motion"
+import { Loader2, RotateCw } from 'lucide-react'
+import PageLoading from "@/components/ui/page-loading"
+
+import Sidebar from "@/components/pdf-viewer/sidebar"
+import Controls from "@/components/pdf-viewer/controls"
+import ToastComponent from "@/components/ui/toast"
+
+import { useMediaQuery } from "@/hooks/use-media-query"
+
 
 // Set up the worker for react-pdf
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`
@@ -27,12 +33,28 @@ export default function PDFViewer() {
   const [numPages, setNumPages] = useState<number | null>(null)
   const [pageNumber, setPageNumber] = useState(1)
   const [scale, setScale] = useState(1.0)
+  const [rotation, setRotation] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [documentLoading, setDocumentLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [bgColor, setBgColor] = useState("#1e1e2e")
   const [user, setUser] = useState<User | null>(null)
   const [isStarred, setIsStarred] = useState(false)
-
+  const [toast, setToast] = useState<{
+    show: boolean
+    type: "success" | "error" | "info"
+    title: string
+    message: string
+  }>({
+    show: false,
+    type: "success",
+    title: "",
+    message: "",
+  })
+  
+  const isMobile = useMediaQuery("(max-width: 768px)")
+  const containerRef = useRef<HTMLDivElement>(null)
+  
   const router = useRouter()
 
   useEffect(() => {
@@ -103,13 +125,13 @@ export default function PDFViewer() {
 
   function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
     setNumPages(numPages)
-    setLoading(false)
+    setDocumentLoading(false)
   }
 
   function onDocumentLoadError(error: Error) {
     console.error("Error loading PDF:", error)
     setError("Não foi possível carregar o documento.")
-    setLoading(false)
+    setDocumentLoading(false)
   }
 
   const handlePreviousPage = () => {
@@ -134,6 +156,10 @@ export default function PDFViewer() {
   const handleZoomOut = () => {
     setScale((prev) => Math.max(prev - 0.2, 0.5))
   }
+  
+  const handleRotate = () => {
+    setRotation((prev) => (prev + 90) % 360)
+  }
 
   const handleDownload = async () => {
     if (pdf?.s3Url) {
@@ -149,6 +175,13 @@ export default function PDFViewer() {
           type: "DOWNLOAD",
           pdfId: id,
         }),
+      })
+      
+      setToast({
+        show: true,
+        type: "success",
+        title: "Download iniciado",
+        message: "Seu download começou em uma nova aba.",
       })
     }
   }
@@ -184,9 +217,25 @@ export default function PDFViewer() {
           isStarred: newStarredState,
         }),
       })
+      
+      setToast({
+        show: true,
+        type: "success",
+        title: newStarredState ? "Adicionado aos favoritos" : "Removido dos favoritos",
+        message: newStarredState 
+          ? "Este PDF foi adicionado aos seus favoritos." 
+          : "Este PDF foi removido dos seus favoritos.",
+      })
     } catch (error) {
       console.error("Error toggling star:", error)
       setIsStarred(!isStarred) // Reverter em caso de erro
+      
+      setToast({
+        show: true,
+        type: "error",
+        title: "Erro",
+        message: "Não foi possível atualizar os favoritos. Tente novamente.",
+      })
     }
   }
 
@@ -202,7 +251,13 @@ export default function PDFViewer() {
         })
       } else {
         await navigator.clipboard.writeText(shareUrl)
-        alert("Link copiado para a área de transferência!")
+        
+        setToast({
+          show: true,
+          type: "success",
+          title: "Link copiado",
+          message: "O link foi copiado para a área de transferência!",
+        })
       }
 
       // Registrar atividade de compartilhamento
@@ -218,6 +273,13 @@ export default function PDFViewer() {
       })
     } catch (error) {
       console.error("Error sharing:", error)
+      
+      setToast({
+        show: true,
+        type: "error",
+        title: "Erro ao compartilhar",
+        message: "Não foi possível compartilhar este PDF. Tente novamente.",
+      })
     }
   }
 
@@ -225,24 +287,34 @@ export default function PDFViewer() {
   const changeBackground = (color: string) => {
     setBgColor(color)
   }
+  
+  const handlePrint = () => {
+    if (pdf?.s3Url) {
+      const printWindow = window.open(pdf.s3Url, '_blank')
+      if (printWindow) {
+        printWindow.addEventListener('load', () => {
+          printWindow.print()
+        })
+      }
+    }
+  }
 
   if (loading) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-[#0e0525]">
-        <div className="h-32 w-32 animate-pulse rounded-full bg-purple-600/20" />
-      </div>
-    )
+    return <PageLoading />
   }
 
   if (error) {
     return (
-      <div className="flex h-screen flex-col items-center justify-center bg-[#0e0525] text-white">
-        <div className="mb-4 text-red-400">{error}</div>
+      <div className="flex h-screen flex-col items-center justify-center bg-gradient-to-br from-[#0e0525] to-[#1a0f24] text-white">
+        <div className="mb-6 rounded-full bg-red-500/20 p-4">
+          <Loader2 size={32} className="animate-spin text-red-400" />
+        </div>
+        <h2 className="mb-2 text-xl font-bold text-white">Erro ao carregar o PDF</h2>
+        <div className="mb-6 text-center text-red-400">{error}</div>
         <button
           onClick={handleBackToDashboard}
-          className="flex items-center gap-2 rounded-md bg-purple-600 px-4 py-2 text-white hover:bg-purple-700"
+          className="flex items-center gap-2 rounded-md bg-purple-600 px-4 py-2 text-white transition-colors hover:bg-purple-700"
         >
-          <ArrowLeft size={16} />
           Voltar ao Dashboard
         </button>
       </div>
@@ -250,213 +322,127 @@ export default function PDFViewer() {
   }
 
   return (
-    <div className="flex h-screen bg-[#1e1e2e] text-white">
-      {/* Sidebar */}
-      <div className="w-48 min-w-48 flex flex-col border-r border-zinc-800 bg-[#111827]">
-        <div className="border-b border-zinc-800 p-4">
-          <button
-            onClick={handleBackToDashboard}
-            className="mb-4 flex w-full items-center gap-2 rounded-md bg-zinc-800 px-3 py-2 text-sm hover:bg-zinc-700"
-          >
-            <ArrowLeft size={16} />
-            Dashboard
-          </button>
-          <div className="mb-3 flex justify-center">
-            <div className="h-16 w-16 overflow-hidden rounded-full bg-zinc-800">
-              {user?.image && (
-                <Image
-                  src={user.image || "/placeholder.svg"}
-                  alt="User"
-                  className="h-full w-full object-cover"
-                  width={100}
-                  height={100}
-                />
-              )}
-            </div>
-          </div>
-          <h2 className="text-center text-sm font-medium">{user?.name}</h2>
-          <p className="text-center text-xs text-zinc-400">{user?.email}</p>
-        </div>
+    <div className="flex h-screen flex-col bg-[#0e0525] text-white">
+      <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar */}
+        <Sidebar
+          user={user}
+          pdf={pdf}
+          numPages={numPages}
+          isStarred={isStarred}
+          onToggleStar={handleToggleStar}
+          onShare={handleShare}
+          onDownload={handleDownload}
+          onBackToDashboard={handleBackToDashboard}
+          onChangeBackground={changeBackground}
+          isMobile={isMobile}
+        />
 
-        <div className="border-b border-zinc-800 p-4">
-          <h3 className="mb-2 text-xs font-medium">Informações do Documento</h3>
-          {pdf && (
-            <div className="space-y-1 text-xs text-zinc-400">
-              <p className="truncate font-medium text-white">{pdf.name}</p>
-              <p>Enviado em: {new Date(pdf.createdAt).toLocaleDateString()}</p>
-              <p>Páginas: {numPages || "..."}</p>
-            </div>
-          )}
-        </div>
-
-        <div className="flex justify-between border-b border-zinc-800 p-4">
-          <button
-            className={`rounded-full p-2 hover:bg-zinc-800 ${isStarred ? "text-yellow-400" : "text-zinc-400 hover:text-yellow-400"}`}
-            onClick={handleToggleStar}
-            title={isStarred ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+        {/* Main Content */}
+        <div className="flex flex-1 flex-col">
+          {/* PDF Viewer */}
+          <div
+            ref={containerRef}
+            className="relative flex flex-1 items-center justify-center overflow-auto transition-colors duration-300"
+            style={{ backgroundColor: bgColor }}
           >
-            <Star size={18} fill={isStarred ? "currentColor" : "none"} />
-          </button>
-          <button
-            className="rounded-full p-2 hover:bg-zinc-800 text-zinc-400 hover:text-pink-400"
-            onClick={handleShare}
-            title="Compartilhar"
-          >
-            <Share size={18} />
-          </button>
-          <button
-            className="rounded-full p-2 hover:bg-zinc-800 text-zinc-400 hover:text-green-400"
-            onClick={handleDownload}
-            title="Download"
-          >
-            <Download size={18} />
-          </button>
-        </div>
-
-        {/* Customization Options */}
-        <div className="border-b border-zinc-800 p-4">
-          <h3 className="mb-2 text-xs font-medium">Personalização</h3>
-          <div className="space-y-2">
-            <div>
-              <p className="mb-1 text-xs">Cor de Fundo</p>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => changeBackground("#1e1e2e")}
-                  className="h-6 w-6 rounded-full border border-zinc-700 bg-[#1e1e2e]"
-                ></button>
-                <button
-                  onClick={() => changeBackground("#1f2937")}
-                  className="h-6 w-6 rounded-full border border-zinc-700 bg-zinc-800"
-                ></button>
-                <button
-                  onClick={() => changeBackground("#111827")}
-                  className="h-6 w-6 rounded-full border border-zinc-700 bg-[#111827]"
-                ></button>
-                <button
-                  onClick={() => changeBackground("#374151")}
-                  className="h-6 w-6 rounded-full border border-zinc-600 bg-zinc-700"
-                ></button>
-                <button
-                  onClick={() => changeBackground("#4f46e5")}
-                  className="h-6 w-6 rounded-full border border-indigo-500 bg-indigo-600"
-                ></button>
+            {documentLoading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+                <div className="flex flex-col items-center">
+                  <Loader2 size={40} className="mb-4 animate-spin text-purple-400" />
+                  <p className="text-white">Carregando documento...</p>
+                </div>
               </div>
-            </div>
-          </div>
-        </div>
+            )}
 
-        <div className="mt-auto border-t border-zinc-800 p-4">
-          <div className="text-xs text-zinc-400">
-            <p>NeoPDF - Seu leitor de PDF completo</p>
-            <p>Versão 1.0</p>
+            {/* Custom container for PDF */}
+            {pdf && (
+              <div className="pdf-container my-4">
+                <Document
+                  file={pdf.s3Url}
+                  onLoadSuccess={onDocumentLoadSuccess}
+                  onLoadError={onDocumentLoadError}
+                  loading={null}
+                  className="pdf-document"
+                >
+                  <Page
+                    pageNumber={pageNumber}
+                    scale={scale}
+                    rotate={rotation}
+                    renderTextLayer={false}
+                    renderAnnotationLayer={false}
+                    className="shadow-2xl"
+                    loading={
+                      <div className="flex h-[600px] w-[400px] items-center justify-center rounded-lg bg-zinc-800/50">
+                        <Loader2 size={32} className="animate-spin text-purple-400" />
+                      </div>
+                    }
+                  />
+                </Document>
+              </div>
+            )}
+
+            {/* Custom style for PDF via CSS-in-JS */}
+            <style jsx global>{`
+              .pdf-container {
+                padding: 20px;
+                border-radius: 12px;
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+                transition: transform 0.3s ease;
+              }
+              
+              .pdf-document {
+                display: flex;
+                justify-content: center;
+              }
+              
+              .react-pdf__Page {
+                margin: 0 auto;
+                border-radius: 8px;
+                overflow: hidden;
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+              }
+              
+              .react-pdf__Page__canvas {
+                border-radius: 8px;
+                display: block !important;
+              }
+              
+              @media (max-width: 640px) {
+                .pdf-container {
+                  padding: 10px;
+                }
+              }
+            `}</style>
           </div>
+
+          {/* Controls */}
+          <Controls
+            pageNumber={pageNumber}
+            numPages={numPages}
+            scale={scale}
+            onPreviousPage={handlePreviousPage}
+            onNextPage={handleNextPage}
+            onPageChange={handlePageChange}
+            onZoomIn={handleZoomIn}
+            onZoomOut={handleZoomOut}
+            onRotate={handleRotate}
+            onPrint={handlePrint}
+          />
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="flex flex-1 flex-col">
-        {/* PDF Viewer */}
-        <div
-          className="relative flex flex-1 items-center justify-center overflow-auto"
-          style={{ backgroundColor: bgColor }}
-        >
-          {loading && <div className="text-white">Carregando documento...</div>}
-
-          {error && <div className="text-red-500">{error}</div>}
-
-          {/* Custom container for PDF */}
-          {pdf && (
-            <div className="pdf-container">
-              <Document
-                file={pdf.s3Url}
-                onLoadSuccess={onDocumentLoadSuccess}
-                onLoadError={onDocumentLoadError}
-                loading={<div className="text-white">Carregando documento...</div>}
-                className="pdf-document"
-              >
-                <Page
-                  pageNumber={pageNumber}
-                  scale={scale}
-                  renderTextLayer={false}
-                  renderAnnotationLayer={false}
-                  className="shadow-2xl"
-                />
-              </Document>
-            </div>
-          )}
-
-          {/* Custom style for PDF via CSS-in-JS */}
-          <style jsx global>{`
-            .pdf-container {
-              padding: 20px;
-              border-radius: 8px;
-              box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            }
-            
-            .pdf-document {
-              display: flex;
-              justify-content: center;
-            }
-            
-            .react-pdf__Page {
-              margin: 0 auto;
-              border-radius: 4px;
-              overflow: hidden;
-              box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
-            }
-            
-            .react-pdf__Page__canvas {
-              border-radius: 4px;
-              display: block !important;
-            }
-          `}</style>
-        </div>
-
-        {/* Controls */}
-        <div className="flex h-12 items-center justify-center border-t border-zinc-800 bg-[#111827] px-4 text-white">
-          <div className="flex items-center space-x-4">
-            <span className="text-sm text-zinc-400">Página</span>
-            <div className="flex items-center">
-              <input
-                type="text"
-                value={pageNumber}
-                onChange={handlePageChange}
-                className="w-8 rounded border border-zinc-700 bg-zinc-800 text-center text-white"
-              />
-              <span className="mx-1 text-zinc-400">/</span>
-              <span className="text-zinc-400">{numPages || "-"}</span>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <button onClick={handlePreviousPage} className="rounded p-1 hover:bg-zinc-700" disabled={pageNumber <= 1}>
-                <ChevronLeft size={16} className={pageNumber <= 1 ? "text-zinc-600" : "text-zinc-300"} />
-              </button>
-
-              <button
-                onClick={handleNextPage}
-                className="rounded p-1 hover:bg-zinc-700"
-                disabled={pageNumber >= (numPages || 1)}
-              >
-                <ChevronRight size={16} className={pageNumber >= (numPages || 1) ? "text-zinc-600" : "text-zinc-300"} />
-              </button>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <button onClick={handleZoomOut} className="rounded p-1 hover:bg-zinc-700">
-                <Minus size={16} className="text-zinc-300" />
-              </button>
-
-              <button onClick={handleZoomIn} className="rounded p-1 hover:bg-zinc-700">
-                <Plus size={16} className="text-zinc-300" />
-              </button>
-
-              <button className="rounded p-1 hover:bg-zinc-700">
-                <Maximize size={16} className="text-zinc-300" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Toast Notifications */}
+      <AnimatePresence>
+        {toast.show && (
+          <ToastComponent
+            title={toast.title}
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast({ ...toast, show: false })}
+          />
+        )}
+      </AnimatePresence>
     </div>
   )
 }

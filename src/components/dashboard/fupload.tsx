@@ -1,25 +1,35 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
-import { Upload, Check, AlertCircle, X, Loader2 } from "lucide-react"
+import { useState, useRef } from "react"
+import { useRouter } from "next/navigation"
+import { Upload, Check, AlertCircle, X, Loader2, Info } from 'lucide-react'
+import { motion, AnimatePresence } from "framer-motion"
 
 interface FileUploadProps {
   onUploadComplete?: (data: any) => void
+  className?: string
+  showLabel?: boolean
 }
 
-export default function FileUpload({ onUploadComplete }: FileUploadProps) {
+export default function FileUpload({ onUploadComplete, className = "", showLabel = true }: FileUploadProps) {
   const [isUploading, setIsUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
-  const [uploadStatus, setUploadStatus] = useState<"idle" | "uploading" | "success" | "error">("idle")
+  const [uploadStatus, setUploadStatus] = useState<"idle" | "uploading" | "success" | "error" | "duplicate">("idle")
   const [errorMessage, setErrorMessage] = useState("")
   const [fileName, setFileName] = useState("")
+  const [isDragging, setIsDragging] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  
+  const router = useRouter()
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
+    
+    await processFile(file)
+  }
 
+  const processFile = async (file: File) => {
     // Validate file type
     if (file.type !== "application/pdf") {
       setUploadStatus("error")
@@ -46,9 +56,9 @@ export default function FileUpload({ onUploadComplete }: FileUploadProps) {
           clearInterval(progressInterval)
           return 90
         }
-        return prev + 10
+        return prev + 5
       })
-    }, 300)
+    }, 200)
 
     try {
       const formData = new FormData()
@@ -68,18 +78,35 @@ export default function FileUpload({ onUploadComplete }: FileUploadProps) {
       }
 
       setUploadProgress(100)
-      setUploadStatus("success")
+      
+      // Verificar se é um arquivo duplicado
+      if (data.isDuplicate) {
+        setUploadStatus("duplicate")
+      } else {
+        setUploadStatus("success")
+      }
 
       if (onUploadComplete) {
         onUploadComplete(data)
       }
 
-      // Reset after 3 seconds
+      // Registrar atividade
+      await fetch("/api/activity", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          type: "UPLOAD",
+          pdfId: data.id,
+          details: `Uploaded ${file.name}`,
+        }),
+      })
+
+      // Redirecionar para a página do PDF após 1.5 segundos
       setTimeout(() => {
-        setUploadStatus("idle")
-        setUploadProgress(0)
-        setFileName("")
-      }, 3000)
+        router.push(data.url)
+      }, 1500)
     } catch (error: any) {
       console.error("Upload error:", error)
       setUploadStatus("error")
@@ -90,11 +117,9 @@ export default function FileUpload({ onUploadComplete }: FileUploadProps) {
   }
 
   const handleUploadClick = () => {
-    const input = document.createElement("input")
-    input.type = "file"
-    input.accept = ".pdf"
-    input.onchange = (e: Event) => handleFileChange(e as unknown as React.ChangeEvent<HTMLInputElement>)
-    input.click()
+    if (fileInputRef.current) {
+      fileInputRef.current.click()
+    }
   }
 
   const resetUpload = () => {
@@ -104,63 +129,134 @@ export default function FileUpload({ onUploadComplete }: FileUploadProps) {
     setFileName("")
   }
 
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(true)
+  }
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+  }
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+    
+    const files = e.dataTransfer.files
+    if (files.length > 0) {
+      await processFile(files[0])
+    }
+  }
+
   return (
-    <div className="relative">
-      {uploadStatus === "idle" ? (
-        <button
-          onClick={handleUploadClick}
-          className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-md text-white font-medium transition-colors"
-        >
-          <Upload size={18} />
-          <span>Upload PDF</span>
-        </button>
-      ) : (
-        <div className="w-64 bg-white/10 backdrop-blur-sm rounded-md p-3">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-sm font-medium truncate max-w-[180px]" title={fileName}>
-              {fileName}
-            </p>
-            {uploadStatus !== "uploading" && (
-              <button onClick={resetUpload} className="text-white/70 hover:text-white">
-                <X size={16} />
-              </button>
-            )}
-          </div>
+    <div className={`relative ${className}`}>
+      <input
+        type="file"
+        ref={fileInputRef}
+        accept=".pdf"
+        onChange={handleFileChange}
+        className="hidden"
+      />
 
-          <div className="h-2 w-full bg-gray-700 rounded-full overflow-hidden">
-            <div
-              className={`h-full rounded-full transition-all duration-300 ${
-                uploadStatus === "error" ? "bg-red-500" : "bg-purple-500"
-              }`}
-              style={{ width: `${uploadProgress}%` }}
-            ></div>
-          </div>
-
-          <div className="flex items-center justify-between mt-2">
-            {uploadStatus === "uploading" && (
-              <div className="flex items-center gap-1 text-white/70 text-xs">
-                <Loader2 size={14} className="animate-spin" />
-                <span>Uploading... {uploadProgress}%</span>
+      <AnimatePresence>
+        {uploadStatus === "idle" ? (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className={`${
+              isDragging
+                ? "bg-purple-500/20 border-purple-500"
+                : "hover:bg-purple-500/10 border-purple-500/20"
+            } border-2 border-dashed rounded-xl transition-all duration-200 cursor-pointer`}
+          >
+            <button
+              onClick={handleUploadClick}
+              className="w-full flex flex-col items-center justify-center py-6 px-4"
+              disabled={isUploading}
+            >
+              <div className="h-12 w-12 rounded-full bg-purple-500/10 flex items-center justify-center mb-3">
+                <Upload className="h-6 w-6 text-purple-400" />
               </div>
-            )}
+              {showLabel && (
+                <>
+                  <p className="text-white font-medium mb-1">Arraste e solte seu PDF aqui</p>
+                  <p className="text-zinc-400 text-sm">ou clique para selecionar</p>
+                </>
+              )}
+            </button>
+          </motion.div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="w-full bg-white/10 backdrop-blur-sm rounded-xl p-4"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-medium truncate max-w-[180px]" title={fileName}>
+                {fileName}
+              </p>
+              {uploadStatus !== "uploading" && (
+                <button onClick={resetUpload} className="text-white/70 hover:text-white">
+                  <X size={16} />
+                </button>
+              )}
+            </div>
 
-            {uploadStatus === "success" && (
-              <div className="flex items-center gap-1 text-green-400 text-xs">
-                <Check size={14} />
-                <span>Upload completo</span>
-              </div>
-            )}
+            <div className="h-2 w-full bg-gray-700 rounded-full overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${uploadProgress}%` }}
+                transition={{ duration: 0.3 }}
+                className={`h-full rounded-full transition-all duration-300 ${
+                  uploadStatus === "error"
+                    ? "bg-red-500"
+                    : uploadStatus === "duplicate"
+                    ? "bg-blue-500"
+                    : "bg-purple-500"
+                }`}
+              />
+            </div>
 
-            {uploadStatus === "error" && (
-              <div className="flex items-center gap-1 text-red-400 text-xs">
-                <AlertCircle size={14} />
-                <span>{errorMessage}</span>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+            <div className="flex items-center justify-between mt-2">
+              {uploadStatus === "uploading" && (
+                <div className="flex items-center gap-1 text-white/70 text-xs">
+                  <Loader2 size={14} className="animate-spin" />
+                  <span>Enviando... {uploadProgress}%</span>
+                </div>
+              )}
+
+              {uploadStatus === "success" && (
+                <div className="flex items-center gap-1 text-green-400 text-xs">
+                  <Check size={14} />
+                  <span>Upload completo</span>
+                </div>
+              )}
+
+              {uploadStatus === "duplicate" && (
+                <div className="flex items-center gap-1 text-blue-400 text-xs">
+                  <Info size={14} />
+                  <span>Arquivo já existe</span>
+                </div>
+              )}
+
+              {uploadStatus === "error" && (
+                <div className="flex items-center gap-1 text-red-400 text-xs">
+                  <AlertCircle size={14} />
+                  <span>{errorMessage}</span>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
-

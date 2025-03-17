@@ -42,7 +42,7 @@ export default function FileUpload({ onUploadComplete, className = "", showLabel
     }
 
     // Validate file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
+    if (file.size > 20 * 1024 * 1024) {
       setUploadStatus("error")
       setErrorMessage("O arquivo não pode ser maior que 20MB")
       return
@@ -151,29 +151,30 @@ export default function FileUpload({ onUploadComplete, className = "", showLabel
   }
 
   useEffect(() => {
-    const fetchCases = () => {
-      const uploadingCases = {
-        idle: () => router.push("#"),
-        uploading: () => setUploadProgress(0),
-        success: () => router.push(`/pdf/${data.id}`),
-        error: () => {
+    const handleStatusChange = () => {
+      switch (uploadStatus) {
+        case "idle":
           router.push("#")
+          break
+        case "uploading":
+          setUploadProgress(0)
+          break
+        case "success":
+          router.push(`/pdf/${data?.id}`)
+          break
+        case "error":
+        case "duplicate":
           setIsUploading(false)
           resetUpload()
-        },
-        duplicate: () => {
-          setIsUploading(false)
-          resetUpload()
           router.push("#")
-        },
-      } as const
-      
-      return uploadingCases[uploadStatus] 
-      
+          break
+        default:
+          break
+      }
     }
 
-    fetchCases()
-  }, [uploadStatus])
+    handleStatusChange()
+  }, [uploadStatus, data, router])
 
   return (
     <div className={`relative ${className}`}>

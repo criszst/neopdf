@@ -1,12 +1,13 @@
 "use client"
+import React, { useEffect, useState} from "react"
 
-import type React from "react"
-import { useEffect } from "react"
-import { useState } from "react"
 import type { User } from "next-auth"
 import Image from "next/image"
 
 import { Settings, Star, Clock, Search, ChevronDown, LayoutGrid, Folder, BarChart3, Calendar, X } from "lucide-react"
+import fetchSession from "@/lib/api/fetchSession"
+import fetchStats from "@/lib/api/fetchStats"
+import UserStats from "@/lib/interfaces/UserStats"
 
 interface SideBarProps {
   sidebarOpen: boolean
@@ -15,20 +16,23 @@ interface SideBarProps {
 
 const SideBar: React.FC<SideBarProps> = ({ sidebarOpen, setSidebarOpen }) => {
   const [user, setUser] = useState<User | null>(null)
+  const [stats, setStats] = useState<UserStats | null>(null)
+
+  const getUser = async () => {
+    const session = fetchSession();
+    const data = await session.then((res) => res.json());
+    setUser(data?.user || null);
+  }
+
+  const getStats = async () => {
+    const session = fetchStats();
+    const data = await session.then((res) => res.json());
+    setStats(data?.user || null);
+  };
 
   useEffect(() => {
-    async function fetchSession() {
-      try {
-        const res = await fetch("/api/auth/session")
-        if (!res.ok) throw new Error("Failed to fetch session")
-        const data = await res.json()
-        setUser(data?.user || null)
-      } catch (error) {
-        console.error(error)
-      }
-    }
-
-    fetchSession()
+    getStats();
+    getUser();
   }, [])
 
   return (
@@ -43,7 +47,7 @@ const SideBar: React.FC<SideBarProps> = ({ sidebarOpen, setSidebarOpen }) => {
       )}
 
       <div
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-[#1a0f24] transform ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-[#150931] transform ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         } transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 overflow-y-auto`}
       >
@@ -107,9 +111,9 @@ const SideBar: React.FC<SideBarProps> = ({ sidebarOpen, setSidebarOpen }) => {
             <div className="p-3 md:p-4 rounded-lg bg-gradient-to-br from-purple-500/10 via-purple-500/5 to-transparent border border-purple-500/20">
               <h4 className="text-sm font-medium text-white mb-2">Storage</h4>
               <div className="w-full h-2 bg-[#1C1F2E] rounded-full overflow-hidden">
-                <div className="h-full w-[82%] bg-gradient-to-r from-purple-400 to-purple-600 rounded-full" />
+                <div style={{ width: `${stats?.storage.used}px` }} className="h-full bg-gradient-to-r from-purple-400 to-purple-600 rounded-full" />
               </div>
-              <p className="text-xs text-purple-300/70 mt-2">82% of 10GB used</p>
+              <p className="text-xs text-purple-300/70 mt-2">{stats?.storage.used === 0 ? `${stats?.storage.used} MB / ${stats?.storage.limit} MB` : "Sem dados"}</p>
             </div>
           </div>
 

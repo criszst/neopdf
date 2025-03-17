@@ -1,18 +1,12 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
+
 import { FileText, Clock, HardDrive } from "lucide-react"
 import { motion } from "framer-motion"
 
-interface UserStats {
-  totalPdfs: number
-  starredPdfs: number
-  storage: {
-    used: number
-    limit: number
-    percentage: number
-  }
-}
+import UserStats from "@/lib/interfaces/UserStats"
+
 
 const MetricCards = () => {
   const [stats, setStats] = useState<UserStats | null>(null)

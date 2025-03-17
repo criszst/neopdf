@@ -10,6 +10,7 @@ import { ChevronLeft, ChevronRight, Github, Mail } from "lucide-react"
 import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { User } from "next-auth"
+import PageLoading from "@/components/ui/page-loading"
 
 function LoginPageContent() {
   const router = useRouter()
@@ -288,7 +289,7 @@ function LoginPageContent() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div><PageLoading /></div>}>
       <LoginPageContent />
     </Suspense>
   )

@@ -1,62 +1,77 @@
 "use client"
 
-import { motion, AnimatePresence } from "framer-motion";
-import { X } from "lucide-react";
+import { motion } from "framer-motion"
+import { AlertCircle, Loader2 } from "lucide-react"
 
-interface AlertDialogProps {
-  title: string;
-  message: string;
-  confirmText?: string;
-  cancelText?: string;
-  onConfirm: () => void;
-  onCancel: () => void;
+interface AnimatedAlertProps {
+  title: string
+  message: string
+  confirmText: string
+  cancelText: string
+  onConfirm: () => void
+  onCancel: () => void
+  isLoading?: boolean
 }
 
-const AnimatedAlert: React.FC<AlertDialogProps> = ({
+export default function AnimatedAlert({
   title,
   message,
-  confirmText = "Confirmar",
-  cancelText = "Cancelar",
+  confirmText,
+  cancelText,
   onConfirm,
   onCancel,
-}) => {
+  isLoading = false,
+}: AnimatedAlertProps) {
   return (
-    <AnimatePresence>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+    >
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50"
+        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.9, y: 20 }}
+        transition={{ type: "spring", damping: 25, stiffness: 300 }}
+        className="bg-[#151823] rounded-xl border border-purple-900/20 p-6 max-w-md w-full shadow-2xl"
       >
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
-          className="bg-[#151823] text-white p-6 rounded-lg shadow-lg w-[90%] max-w-md relative"
-        >
-          <button onClick={onCancel} className="absolute top-3 right-3 text-white/50 hover:text-white">
-            <X size={20} />
-          </button>
-          <h2 className="text-xl font-bold mb-3">{title}</h2>
-          <p className="text-white/70 mb-6">{message}</p>
-          <div className="flex justify-end gap-3">
-            <button
-              onClick={onCancel}
-              className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-md transition"
-            >
-              {cancelText}
-            </button>
-            <button
-              onClick={onConfirm}
-              className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-md transition"
-            >
-              {confirmText}
-            </button>
+        <div className="flex items-start gap-4">
+          <div className="flex-shrink-0 bg-red-900/20 rounded-full p-2">
+            <AlertCircle className="h-6 w-6 text-red-500" />
           </div>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
-  );
-};
+          <div>
+            <h3 className="text-lg font-semibold text-white mb-2">{title}</h3>
+            <p className="text-zinc-300 text-sm">{message}</p>
+          </div>
+        </div>
 
-export default AnimatedAlert;
+        <div className="flex gap-3 mt-6">
+          <button
+            onClick={onCancel}
+            disabled={isLoading}
+            className="flex-1 py-2 px-4 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors disabled:opacity-50"
+          >
+            {cancelText}
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={isLoading}
+            className="flex-1 py-2 px-4 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 rounded-lg text-white transition-colors flex items-center justify-center gap-2 disabled:opacity-70"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Processando...</span>
+              </>
+            ) : (
+              confirmText
+            )}
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  )
+}
+

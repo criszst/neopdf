@@ -1,14 +1,9 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useRef, useState } from "react"
 
 import Image from "next/image"
 import Link from "next/link"
-
-import { User } from "next-auth"
-import { useRouter } from "next/navigation"
-
-import { DefaultSeo } from 'next-seo';
 
 import { ChevronDown } from "lucide-react"
 
