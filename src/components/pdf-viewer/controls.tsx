@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { ChevronLeft, ChevronRight, Plus, Minus, Maximize, RotateCw, Printer, SlidersHorizontal } from "lucide-react"
 
 interface ControlsProps {
@@ -34,8 +34,8 @@ export default function Controls({
   const [showMoreControls, setShowMoreControls] = useState(false)
 
   return (
-    <div className="border-t border-zinc-800 bg-gradient-to-r from-[#111827] to-[#0f172a] px-4 py-3 text-white">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="border-t border-zinc-800 bg-gradient-to-r from-[#111827] to-[#0f172a] px-3 py-3 text-white">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="flex items-center rounded-lg bg-zinc-800/70 p-1">
             <button
@@ -90,12 +90,14 @@ export default function Controls({
           </div>
         </div>
 
+       
         <div className="flex items-center gap-2">
-          <div className="hidden md:flex items-center gap-2">
+         
+          <div className="hidden md:flex items-center gap-2 z-50">
             {onRotate && (
               <button
                 onClick={onRotate}
-                className="rounded-md bg-zinc-800/70 p-2 text-zinc-400 transition-colors hover:bg-zinc-700 hover:text-white"
+                className="z-60 rounded-md bg-zinc-800/70 p-2 text-zinc-400 transition-colors hover:bg-zinc-700 hover:text-white"
                 aria-label="Rotacionar"
               >
                 <RotateCw size={18} />
@@ -120,9 +122,10 @@ export default function Controls({
             )}
           </div>
 
+         {/* TODO: fix the position of button in mobile screens */}
           <button
             onClick={() => setShowMoreControls(!showMoreControls)}
-            className="md:hidden rounded-md bg-zinc-800/70 p-2 text-zinc-400 transition-colors hover:bg-zinc-700 hover:text-white"
+            className="mr-20 flex md:hidden rounded-md bg-purple-600/70 p-2 text-white transition-colors hover:bg-purple-700"
             aria-label="Mais opções"
           >
             <SlidersHorizontal size={18} />
@@ -130,57 +133,61 @@ export default function Controls({
         </div>
       </div>
 
-      {/* Mobile expanded controls */}
-      {showMoreControls && (
-        <motion.div
-          initial={{ height: 0, opacity: 0 }}
-          animate={{ height: "auto", opacity: 1 }}
-          exit={{ height: 0, opacity: 0 }}
-          className="mt-3 grid grid-cols-4 gap-2 overflow-hidden border-t border-zinc-800/50 pt-3"
-        >
-          <button
-            onClick={onZoomOut}
-            className="flex flex-col items-center justify-center rounded-md bg-zinc-800/70 p-2 text-zinc-400 transition-colors hover:bg-zinc-700 hover:text-white"
+      {/* Mobile controls */}
+      <AnimatePresence>
+        {showMoreControls && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="mt-3 grid grid-cols-3 gap-2 overflow-hidden border-t border-zinc-800/50 pt-3"
           >
-            <Minus size={18} />
-            <span className="mt-1 text-xs">Diminuir</span>
-          </button>
-
-          <button
-            onClick={onZoomIn}
-            className="flex flex-col items-center justify-center rounded-md bg-zinc-800/70 p-2 text-zinc-400 transition-colors hover:bg-zinc-700 hover:text-white"
-          >
-            <Plus size={18} />
-            <span className="mt-1 text-xs">Aumentar</span>
-          </button>
-
-          {onRotate && (
             <button
-              onClick={onRotate}
+              onClick={onZoomOut}
               className="flex flex-col items-center justify-center rounded-md bg-zinc-800/70 p-2 text-zinc-400 transition-colors hover:bg-zinc-700 hover:text-white"
             >
-              <RotateCw size={18} />
-              <span className="mt-1 text-xs">Girar</span>
+              <Minus size={18} />
+              <span className="mt-1 text-xs">Diminuir</span>
             </button>
-          )}
 
-          <button className="flex flex-col items-center justify-center rounded-md bg-zinc-800/70 p-2 text-zinc-400 transition-colors hover:bg-zinc-700 hover:text-white">
-            <Maximize size={18} />
-            <span className="mt-1 text-xs">Tela cheia</span>
-          </button>
-
-          {onPrint && (
             <button
-              onClick={onPrint}
+              onClick={onZoomIn}
               className="flex flex-col items-center justify-center rounded-md bg-zinc-800/70 p-2 text-zinc-400 transition-colors hover:bg-zinc-700 hover:text-white"
             >
-              <Printer size={18} />
-              <span className="mt-1 text-xs">Imprimir</span>
+              <Plus size={18} />
+              <span className="mt-1 text-xs">Aumentar</span>
             </button>
-          )}
-        </motion.div>
-      )}
+
+            {onRotate && (
+              <button
+                onClick={onRotate}
+                className="flex flex-col items-center justify-center rounded-md bg-zinc-800/70 p-2 text-zinc-400 transition-colors hover:bg-zinc-700 hover:text-white"
+              >
+                <RotateCw size={18} />
+                <span className="mt-1 text-xs">Girar</span>
+              </button>
+            )}
+
+            <button 
+              className="flex flex-col items-center justify-center rounded-md bg-zinc-800/70 p-2 text-zinc-400 transition-colors hover:bg-zinc-700 hover:text-white"
+            >
+              <Maximize size={18} />
+              <span className="mt-1 text-xs">Tela cheia</span>
+            </button>
+
+            {onPrint && (
+              <button
+                onClick={onPrint}
+                className="flex flex-col items-center justify-center rounded-md bg-zinc-800/70 p-2 text-zinc-400 transition-colors hover:bg-zinc-700 hover:text-white"
+              >
+                <Printer size={18} />
+                <span className="mt-1 text-xs">Imprimir</span>
+              </button>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
-
