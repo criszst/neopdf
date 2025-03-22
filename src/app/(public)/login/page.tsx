@@ -68,7 +68,7 @@ function LoginPageContent() {
     }
   }
 
-    // TODO: improve this router, cause its kind weird
+
     useEffect(() => {
       if (user?.email !== null ) {
         router.push("/dashboard")

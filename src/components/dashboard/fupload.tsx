@@ -4,6 +4,7 @@ import { useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { Upload, Check, AlertCircle, X, Loader2, Info } from 'lucide-react'
 import { motion, AnimatePresence } from "framer-motion"
+import ToastComponent from "../ui/toast"
 
 interface FileUploadProps {
   onUploadComplete?: (data: any) => void
@@ -30,14 +31,14 @@ export default function FileUpload({ onUploadComplete, className = "", showLabel
   }
 
   const processFile = async (file: File) => {
-    // Validate file type
+
     if (file.type !== "application/pdf") {
       setUploadStatus("error")
       setErrorMessage("Apenas arquivos PDF são permitidos")
       return
     }
 
-    // Validate file size (max 10MB)
+    // max 10mb
     if (file.size > 10 * 1024 * 1024) {
       setUploadStatus("error")
       setErrorMessage("O arquivo não pode ser maior que 10MB")
@@ -84,6 +85,9 @@ export default function FileUpload({ onUploadComplete, className = "", showLabel
         setUploadStatus("duplicate")
       } else {
         setUploadStatus("success")
+        setTimeout(() => {
+          router.push(data.url)
+        }, 1500)
       }
 
       if (onUploadComplete) {
@@ -103,10 +107,7 @@ export default function FileUpload({ onUploadComplete, className = "", showLabel
         }),
       })
 
-      // Redirecionar para a página do PDF após 1.5 segundos
-      setTimeout(() => {
-        router.push(data.url)
-      }, 1500)
+ 
     } catch (error: any) {
       console.error("Upload error:", error)
       setUploadStatus("error")

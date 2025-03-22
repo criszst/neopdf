@@ -122,10 +122,10 @@ export default function Controls({
             )}
           </div>
 
-         {/* TODO: fix the position of button in mobile screens */}
+        
           <button
             onClick={() => setShowMoreControls(!showMoreControls)}
-            className="mr-40 flex md:hidden rounded-md bg-purple-600/70 p-2 text-white transition-colors hover:bg-purple-700"
+            className="right-5 md:mr-0 absolute flex md:hidden rounded-md bg-purple-600/70 p-2 text-white transition-colors hover:bg-purple-700"
             aria-label="Mais opções"
           >
             <SlidersHorizontal size={18} />

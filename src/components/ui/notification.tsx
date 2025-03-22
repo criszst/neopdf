@@ -3,19 +3,9 @@
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { X, CheckCircle, AlertTriangle, Info } from "lucide-react"
+import NotificationProps from "@/lib/props/NotificationProps"
 
-interface NotificationProps {
-  title: string
-  message: string
-  type?: "success" | "warning" | "info"
-  isOpen: boolean
-  onClose: () => void
-  duration?: number
-  action?: {
-    label: string
-    onClick: () => void
-  }
-}
+
 
 export default function Notification({
   title,

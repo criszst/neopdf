@@ -14,6 +14,7 @@ interface PDF {
 interface PDFListProps {
   pdfs: PDF[]
   onDelete: (id: string) => void
+  viewMode: "grid" | "list"; 
 }
 
 const PDFList: React.FC<PDFListProps> = ({ pdfs, onDelete }) => {
