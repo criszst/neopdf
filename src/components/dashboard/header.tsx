@@ -6,18 +6,15 @@ import { useState, useEffect, useRef } from "react"
 import Image from "next/image"
 
 
-import { formatDate, formatDistanceToNow } from "date-fns"
-import { ptBR } from "date-fns/locale"
-
 import { motion, AnimatePresence } from "framer-motion"
-import { Bell, Search, ChevronDown, Calendar, Settings, LogOut, HelpCircle, X } from "lucide-react"
+import { Bell, Search, ChevronDown, Settings, LogOut, HelpCircle, X } from "lucide-react"
 
 import Notification from "@/components/ui/notification"
 
 import HeaderProps from "@/lib/props/HeaderProps"
 
 
-const Header: React.FC<HeaderProps> = ({ user, sidebarOpen, setSidebarOpen, onUpload }) => {
+const Header: React.FC<HeaderProps> = ({ user }) => {
   const [showNotification, setShowNotification] = useState(false)
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showIcon, setShowIcon] = useState(true)
@@ -62,7 +59,7 @@ const Header: React.FC<HeaderProps> = ({ user, sidebarOpen, setSidebarOpen, onUp
               placeholder="Search PDFs..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-transparent py-1.5 pl-9 pr-8 text-sm text-white placeholder-purple-300/50 outline-none rounded-full"
+              className="sm:w-30 max-w-xs xs:w-40 bg-transparent py-1.5 pl-9 pr-8 text-sm text-white placeholder-purple-300/50 outline-none rounded-full"
             />
             {searchQuery && (
               <button onClick={clearSearch} className="absolute right-3 text-purple-400/70 hover:text-white">

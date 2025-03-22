@@ -310,7 +310,9 @@ export default function PDFViewer() {
           <Loader2 size={32} className="animate-spin text-red-400" />
         </div>
         <h2 className="mb-2 text-xl font-bold text-white">Erro ao carregar o PDF</h2>
-        <div className="mb-6 text-center text-red-400">{error}</div>
+        <div className="mb-6 text-center text-red-400">
+          {error}
+        </div>
         <button
           onClick={handleBackToDashboard}
           className="flex items-center gap-2 rounded-md bg-purple-600 px-4 py-2 text-white transition-colors hover:bg-purple-700"
@@ -355,7 +357,7 @@ export default function PDFViewer() {
               </div>
             )}
 
-            {/* Custom container for PDF */}
+  
             {pdf && (
               <div className="pdf-container my-4">
                 <Document
@@ -385,7 +387,7 @@ export default function PDFViewer() {
             {/* Custom style for PDF via CSS-in-JS */}
             <style jsx global>{`
               .pdf-container {
-                padding: 20px;
+                padding: 10px;
                 border-radius: 12px;
                 box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
                 transition: transform 0.3s ease;
@@ -410,13 +412,15 @@ export default function PDFViewer() {
               
               @media (max-width: 640px) {
                 .pdf-container {
-                  padding: 10px;
+                  padding: 5px;
+                  margin: 5px;
                 }
               }
             `}</style>
           </div>
 
-          {/* Controls */}
+  
+          <div className=" relative  bg-gradient-to-r from-[#111827] to-[#0f172a] w-full pb-0 text-white">
           <Controls
             pageNumber={pageNumber}
             numPages={numPages}
@@ -428,7 +432,9 @@ export default function PDFViewer() {
             onZoomOut={handleZoomOut}
             onRotate={handleRotate}
             onPrint={handlePrint}
+            
           />
+          </div>
         </div>
       </div>
 

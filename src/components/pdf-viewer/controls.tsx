@@ -34,7 +34,7 @@ export default function Controls({
   const [showMoreControls, setShowMoreControls] = useState(false)
 
   return (
-    <div className="border-t border-zinc-800 bg-gradient-to-r from-[#111827] to-[#0f172a] px-3 py-3 text-white">
+    <div className="border-t relative border-zinc-800 bg-gradient-to-r from-[#111827] to-[#0f172a] px-3 py-3 text-white">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="flex items-center rounded-lg bg-zinc-800/70 p-1">
