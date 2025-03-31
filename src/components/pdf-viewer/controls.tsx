@@ -34,14 +34,15 @@ export default function Controls({
   const [showMoreControls, setShowMoreControls] = useState(false)
 
   return (
-    <div className="border-t relative border-zinc-800 bg-gradient-to-r from-[#111827] to-[#0f172a] px-3 py-3 text-white">
+    <div className="relative border-t border-zinc-800 bg-gradient-to-b from-[#111827] to-[#0f172a] px-4 py-3 text-white">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex items-center rounded-lg bg-zinc-800/70 p-1">
+          {/* Page navigation controls */}
+          <div className="flex items-center rounded-lg bg-purple-600/10 p-1">
             <button
               onClick={onPreviousPage}
               disabled={pageNumber <= 1}
-              className="rounded-md p-1.5 text-zinc-400 transition-colors hover:bg-zinc-700 hover:text-white disabled:opacity-50"
+              className="rounded-md p-1.5 text-zinc-400 transition-colors hover:bg-purple-600/20 hover:text-white disabled:opacity-50"
               aria-label="Página anterior"
             >
               <ChevronLeft size={18} />
@@ -52,7 +53,7 @@ export default function Controls({
                 type="text"
                 value={pageNumber}
                 onChange={onPageChange}
-                className="w-10 rounded border border-zinc-700 bg-zinc-900 px-1.5 py-0.5 text-center text-sm text-white"
+                className="w-10 rounded border border-purple-900/30 bg-purple-900/20 px-1.5 py-0.5 text-center text-sm text-white focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
                 aria-label="Número da página atual"
               />
               <span className="mx-1 text-sm text-zinc-400">de</span>
@@ -62,17 +63,18 @@ export default function Controls({
             <button
               onClick={onNextPage}
               disabled={pageNumber >= (numPages || 1)}
-              className="rounded-md p-1.5 text-zinc-400 transition-colors hover:bg-zinc-700 hover:text-white disabled:opacity-50"
+              className="rounded-md p-1.5 text-zinc-400 transition-colors hover:bg-purple-600/20 hover:text-white disabled:opacity-50"
               aria-label="Próxima página"
             >
               <ChevronRight size={18} />
             </button>
           </div>
 
-          <div className="hidden sm:flex items-center rounded-lg bg-zinc-800/70 p-1">
+          {/* Zoom controls */}
+          <div className="hidden sm:flex items-center rounded-lg bg-purple-600/10 p-1">
             <button
               onClick={onZoomOut}
-              className="rounded-md p-1.5 text-zinc-400 transition-colors hover:bg-zinc-700 hover:text-white"
+              className="rounded-md p-1.5 text-zinc-400 transition-colors hover:bg-purple-600/20 hover:text-white"
               aria-label="Diminuir zoom"
             >
               <Minus size={18} />
@@ -82,7 +84,7 @@ export default function Controls({
 
             <button
               onClick={onZoomIn}
-              className="rounded-md p-1.5 text-zinc-400 transition-colors hover:bg-zinc-700 hover:text-white"
+              className="rounded-md p-1.5 text-zinc-400 transition-colors hover:bg-purple-600/20 hover:text-white"
               aria-label="Aumentar zoom"
             >
               <Plus size={18} />
@@ -90,14 +92,13 @@ export default function Controls({
           </div>
         </div>
 
-       
+        {/* Desktop action buttons */}
         <div className="flex items-center gap-2">
-         
-          <div className="hidden md:flex items-center gap-2 z-50">
+          <div className="hidden md:flex items-center gap-2 z-10">
             {onRotate && (
               <button
                 onClick={onRotate}
-                className="z-60 rounded-md bg-zinc-800/70 p-2 text-zinc-400 transition-colors hover:bg-zinc-700 hover:text-white"
+                className="rounded-md bg-purple-600/10 p-2 text-zinc-400 transition-colors hover:bg-purple-600/20 hover:text-white"
                 aria-label="Rotacionar"
               >
                 <RotateCw size={18} />
@@ -105,7 +106,7 @@ export default function Controls({
             )}
 
             <button
-              className="rounded-md bg-zinc-800/70 p-2 text-zinc-400 transition-colors hover:bg-zinc-700 hover:text-white"
+              className="rounded-md bg-purple-600/10 p-2 text-zinc-400 transition-colors hover:bg-purple-600/20 hover:text-white"
               aria-label="Tela cheia"
             >
               <Maximize size={18} />
@@ -114,7 +115,7 @@ export default function Controls({
             {onPrint && (
               <button
                 onClick={onPrint}
-                className="rounded-md bg-zinc-800/70 p-2 text-zinc-400 transition-colors hover:bg-zinc-700 hover:text-white"
+                className="rounded-md bg-purple-600/10 p-2 text-zinc-400 transition-colors hover:bg-purple-600/20 hover:text-white"
                 aria-label="Imprimir"
               >
                 <Printer size={18} />
@@ -122,10 +123,10 @@ export default function Controls({
             )}
           </div>
 
-        
+          {/* Mobile menu toggle */}
           <button
             onClick={() => setShowMoreControls(!showMoreControls)}
-            className="right-5 md:mr-0 absolute flex md:hidden rounded-md bg-purple-600/70 p-2 text-white transition-colors hover:bg-purple-700"
+            className="md:hidden rounded-md bg-purple-600 p-2 text-white transition-colors hover:bg-purple-700"
             aria-label="Mais opções"
           >
             <SlidersHorizontal size={18} />
@@ -133,7 +134,7 @@ export default function Controls({
         </div>
       </div>
 
-      {/* Mobile controls */}
+      {/* Mobile expanded controls */}
       <AnimatePresence>
         {showMoreControls && (
           <motion.div
@@ -145,7 +146,7 @@ export default function Controls({
           >
             <button
               onClick={onZoomOut}
-              className="flex flex-col items-center justify-center rounded-md bg-zinc-800/70 p-2 text-zinc-400 transition-colors hover:bg-zinc-700 hover:text-white"
+              className="flex flex-col items-center justify-center rounded-md bg-purple-600/10 p-2 text-zinc-400 transition-colors hover:bg-purple-600/20 hover:text-white"
             >
               <Minus size={18} />
               <span className="mt-1 text-xs">Diminuir</span>
@@ -153,7 +154,7 @@ export default function Controls({
 
             <button
               onClick={onZoomIn}
-              className="flex flex-col items-center justify-center rounded-md bg-zinc-800/70 p-2 text-zinc-400 transition-colors hover:bg-zinc-700 hover:text-white"
+              className="flex flex-col items-center justify-center rounded-md bg-purple-600/10 p-2 text-zinc-400 transition-colors hover:bg-purple-600/20 hover:text-white"
             >
               <Plus size={18} />
               <span className="mt-1 text-xs">Aumentar</span>
@@ -162,16 +163,14 @@ export default function Controls({
             {onRotate && (
               <button
                 onClick={onRotate}
-                className="flex flex-col items-center justify-center rounded-md bg-zinc-800/70 p-2 text-zinc-400 transition-colors hover:bg-zinc-700 hover:text-white"
+                className="flex flex-col items-center justify-center rounded-md bg-purple-600/10 p-2 text-zinc-400 transition-colors hover:bg-purple-600/20 hover:text-white"
               >
                 <RotateCw size={18} />
                 <span className="mt-1 text-xs">Girar</span>
               </button>
             )}
 
-            <button 
-              className="flex flex-col items-center justify-center rounded-md bg-zinc-800/70 p-2 text-zinc-400 transition-colors hover:bg-zinc-700 hover:text-white"
-            >
+            <button className="flex flex-col items-center justify-center rounded-md bg-purple-600/10 p-2 text-zinc-400 transition-colors hover:bg-purple-600/20 hover:text-white">
               <Maximize size={18} />
               <span className="mt-1 text-xs">Tela cheia</span>
             </button>
@@ -179,7 +178,7 @@ export default function Controls({
             {onPrint && (
               <button
                 onClick={onPrint}
-                className="flex flex-col items-center justify-center rounded-md bg-zinc-800/70 p-2 text-zinc-400 transition-colors hover:bg-zinc-700 hover:text-white"
+                className="flex flex-col items-center justify-center rounded-md bg-purple-600/10 p-2 text-zinc-400 transition-colors hover:bg-purple-600/20 hover:text-white"
               >
                 <Printer size={18} />
                 <span className="mt-1 text-xs">Imprimir</span>
@@ -191,3 +190,4 @@ export default function Controls({
     </div>
   )
 }
+

@@ -1,7 +1,7 @@
 import React, { useEffect } from "react"
 import { Upload, MenuIcon, Star, Settings } from 'lucide-react'
 import { AnimatePresence, motion } from "framer-motion"
-import FileUpload from "./fupload"
+import FileUpload from "@/components/animations/FileUpload"
 import ToastProps from "@/lib/props/ToastProps"
 import ToastComponent from "../ui/toast"
 

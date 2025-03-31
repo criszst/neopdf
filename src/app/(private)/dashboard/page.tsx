@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import type { User } from "next-auth"
 import { motion, AnimatePresence } from "framer-motion"
-import { FileText, Upload, Plus, Filter, Grid, List, ChevronDown } from "lucide-react"
+import { Plus, Filter, Grid, List, ChevronDown } from "lucide-react"
 
 import SideBar from "@/components/dashboard/sidebar"
 import Header from "@/components/dashboard/header"
@@ -13,13 +13,13 @@ import AnalyticsChart from "@/components/dashboard/chart"
 import RecentActivity from "@/components/dashboard/ractivity"
 import PdfTypes from "@/components/dashboard/types"
 import QuickActions from "@/components/dashboard/qactions"
-import FileUpload from "@/components/dashboard/fupload"
-import PDFList from "@/components/dashboard/pdfs"
+import FileUpload from "@/components/animations/FileUpload"
 import PageLoading from "@/components/ui/page-loading"
 import ToastComponent from "@/components/ui/toast"
 import AnimatedAlert from "@/components/ui/alert"
 import type ToastProps from "@/lib/props/ToastProps"
 import type Pdf from "@/lib/props/PdfProps"
+import DashboardAdapter from "@/components/dashboard/dashboard-adapter"
 
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null)
@@ -174,8 +174,6 @@ export default function Dashboard() {
         {/* Header */}
         <Header user={user} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} onUpload={handleUploadClick} />
 
-       
-
         {/* Content */}
         <div className="flex-1 p-4 lg:p-6 overflow-auto">
           {/* Title and actions */}
@@ -206,7 +204,7 @@ export default function Dashboard() {
 
               <button
                 onClick={handleUploadClick}
-                className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm font-medium"  
+                className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm font-medium"
               >
                 <Plus size={16} />
                 <span>New PDF</span>
@@ -215,47 +213,40 @@ export default function Dashboard() {
           </div>
 
           <div className="p-2 lg:p-2 ">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.5 }}
+              className="mb-8"
+            >
+              <div className="bg-[#151823]/80 backdrop-blur-sm rounded-xl border border-purple-900/20 p-6">
+                <h2 className="text-lg font-bold text-white mb-4">PDFs</h2>
+                <div className="flex items-center justify-between mb-6">
+                  <FileUpload onUploadComplete={handleUploadComplete} className=" lg:block w-[100%]" showLabel={true} />
+                </div>
 
-<motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.4, delay: 0.5 }}
-    className="mb-8"
-  >
-    <div className="bg-[#151823]/80 backdrop-blur-sm rounded-xl border border-purple-900/20 p-6">
-      <h2 className="text-lg font-bold text-white mb-4">PDFs</h2>
-      <div className="flex items-center justify-between mb-6">
+                {showAlert && (
+                  <AnimatedAlert
+                    title="Tem certeza?"
+                    message="Essa ação não pode ser desfeita. Deseja realmente excluir este PDF?"
+                    confirmText="Sim, excluir"
+                    cancelText="Cancelar"
+                    onConfirm={handleDeletePDF}
+                    onCancel={() => setShowAlert(false)}
+                  />
+                )}
 
-        <FileUpload
-          onUploadComplete={handleUploadComplete}
-          className=" lg:block w-[100%]"
-          showLabel={true}
-        />
-      </div>
-
-      {showAlert && (
-        <AnimatedAlert
-          title="Tem certeza?"
-          message="Essa ação não pode ser desfeita. Deseja realmente excluir este PDF?"
-          confirmText="Sim, excluir"
-          cancelText="Cancelar"
-          onConfirm={handleDeletePDF}
-          onCancel={() => setShowAlert(false)}
-        />
-      )}
-
-      <PDFList pdfs={pdfs} onDelete={handleDeleteRequest} viewMode={viewMode} />
-    </div>
-  </motion.div>
-  </div>
+                <DashboardAdapter pdfs={pdfs} onDelete={handleDeleteRequest} viewMode={viewMode} />
+              </div>
+            </motion.div>
+          </div>
 
           {/* Metrics Cards */}
           <MetricCards />
 
           {/* PDFs Section */}
-           {/* Content */}
-      
-  
+          {/* Content */}
+
           {/* Analytics Chart */}
           <div className="mb-8">
             <AnalyticsChart />
