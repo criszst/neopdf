@@ -215,7 +215,7 @@ const SideBar: React.FC<SideBarProps> = ({ sidebarOpen, setSidebarOpen }) => {
       </button>
 
       {/* Desktop sidebar */}
-      <div className="hidden lg:block h-screen sticky top-0">{sidebarContent}</div>
+      <div className="hidden lg:block h-full sticky top-0">{sidebarContent}</div>
 
       {/* Mobile sidebar */}
       <AnimatePresence>

@@ -206,7 +206,7 @@ export default function Dashboard() {
 
               <button
                 onClick={handleUploadClick}
-                className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm font-medium"
+                className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm font-medium"  
               >
                 <Plus size={16} />
                 <span>New PDF</span>

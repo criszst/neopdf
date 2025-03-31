@@ -420,7 +420,7 @@ export default function PDFViewer() {
           </div>
 
   
-          <div className=" relative  bg-gradient-to-r from-[#111827] to-[#0f172a] w-full pb-0 text-white">
+          <div className=" relative  bg-gradient-to-r from-[#111827] to-[#0f172a] w-full pb-0 text-white"></div>
           <Controls
             pageNumber={pageNumber}
             numPages={numPages}
@@ -434,7 +434,7 @@ export default function PDFViewer() {
             onPrint={handlePrint}
             
           />
-          </div>
+ 
         </div>
       </div>
 
