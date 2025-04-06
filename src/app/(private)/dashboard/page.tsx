@@ -21,6 +21,7 @@ import DashboardAdapter from "@/components/dashboard/dashboard-adapter"
 import { theme } from "@/lib/colors/theme-config"
 import type ToastProps from "@/lib/props/ToastProps"
 import type Pdf from "@/lib/props/PdfProps"
+import PdfGalleryModal from "@/components/pdf-viewer/pdfGallery"
 
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null)
@@ -291,7 +292,7 @@ export default function Dashboard() {
             </div>
           </motion.div>
 
-          {/* Day selector inspired by nixito */}
+         
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
