@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import type { User } from "next-auth"
-import { Star, FileText, Menu, X } from "lucide-react"
+import { Star, FileText, Menu, X, Download, Share2 } from "lucide-react"
 import FileUpload from "../animations/FileUpload"
 import PdfGalleryModal from "@/components/pdf-viewer/pdfGallery"
 import type Pdf from "@/lib/props/PdfProps"
@@ -25,7 +25,7 @@ interface SidebarProps {
   onBackToDashboard: () => void
   onChangeBackground: (color: string) => void
   isMobile: boolean
-  onSelectPdf?: (pdf: Pdf) => void // Add this prop to handle PDF selection
+  onSelectPdf?: (pdf: Pdf) => void
 }
 
 export default function Sidebar({
@@ -39,7 +39,7 @@ export default function Sidebar({
   onBackToDashboard,
   onChangeBackground,
   isMobile,
-  onSelectPdf = () => { },
+  onSelectPdf = () => {},
 }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(!isMobile)
   const [showPdfGallery, setShowPdfGallery] = useState(false)
@@ -49,23 +49,19 @@ export default function Sidebar({
   }
 
   const handleToggleStar = (id: string) => {
-
     if (pdf && pdf.id === id) {
       onToggleStar()
     }
-  
   }
 
   const handleDownload = (id: string) => {
-
     if (pdf && pdf.id === id) {
       onDownload()
     }
-  
   }
 
   const sidebarContent = (
-    <div className="flex h-max-screen flex-col bg-gradient-to-b from-[#111827] to-[#0f172a] text-white">
+    <div className="flex h-full flex-col bg-gradient-to-b from-[#111827] to-[#0f172a] text-white">
       {/* Header with logo */}
       <div className="flex items-center gap-2 border-b border-zinc-800/50 p-4">
         <div className="flex items-center">
@@ -98,10 +94,10 @@ export default function Sidebar({
       </div>
 
       {/* New section */}
-      <div className="p-3 ">
+      <div className="p-3">
         <h3 className="mb-2 px-2 text-sm font-medium text-white">Novo PDF</h3>
-        <div className="flex mb-2 ">
-          <FileUpload className="w-[100%] h-[50%] " showLabel={false} />
+        <div className="flex mb-2">
+          <FileUpload className="w-[100%] h-[50%]" showLabel={false} />
         </div>
       </div>
 
@@ -141,16 +137,11 @@ export default function Sidebar({
         </div>
       </div>
 
-
       <div className="p-3">
         <h3 className="mb-2 px-2 text-sm font-medium text-zinc-400">Opções</h3>
         <div className="space-y-2">
           <Link href="/dashboard">
-            <button
-              className="flex w-full items-center gap-2 rounded-md p-2 text-left text-sm text-white transition-colors hover:bg-purple-600/20"
-
-
-            >
+            <button className="flex w-full items-center gap-2 rounded-md p-2 text-left text-sm text-white transition-colors hover:bg-purple-600/20">
               <Menu size={16} className="text-orange-400" />
               Voltar para o Dashboard
             </button>
@@ -164,29 +155,26 @@ export default function Sidebar({
           <div className="rounded-md bg-purple-600/10 p-3">
             <p className="mb-1 truncate text-sm font-medium text-white">{pdf.name}</p>
             <p className="text-xs text-zinc-400">Páginas: {numPages || "..."}</p>
-
-
           </div>
-
 
           <div className="mt-3 flex justify-between gap-3">
             <button
-              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${isStarred
+              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                isStarred
                   ? "bg-purple-500/20 text-purple-300"
                   : "bg-zinc-800/50 text-zinc-400 hover:bg-zinc-800 hover:text-purple-300"
-                }`}
+              }`}
               onClick={onToggleStar}
             >
               <Star size={14} fill={isStarred ? "currentColor" : "none"} />
               {isStarred ? "Favorito" : "Favoritar"}
             </button>
 
-
-
             <button
               className="flex items-center gap-1.5 rounded-lg bg-zinc-800/50 px-3 py-1.5 text-xs font-medium text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-purple-300"
               onClick={onDownload}
             >
+              <Download size={14} className="hidden sm:block" />
               Baixar
             </button>
 
@@ -194,6 +182,7 @@ export default function Sidebar({
               className="flex items-center gap-1.5 rounded-lg bg-zinc-800/50 px-3 py-1.5 text-xs font-medium text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-purple-300"
               onClick={onShare}
             >
+              <Share2 size={14} className="hidden sm:block" />
               Compartilhar
             </button>
           </div>
@@ -204,19 +193,21 @@ export default function Sidebar({
 
   return (
     <>
-      {/* Mobile toggle button */}
+      {/* Mobile toggle button - Improved positioning */}
       {isMobile && !isOpen && (
-        <button
-          onClick={toggleSidebar}
-          className="fixed left-4 top-4 z-30 rounded-full bg-purple-600/90 p-2 text-white shadow-lg"
-          aria-label="Open sidebar"
-        >
-          <Menu size={20} />
-        </button>
+        <div className="fixed top-0 left-0 z-30 p-2 bg-gradient-to-r from-[#111827]/90 to-transparent">
+          <button
+            onClick={toggleSidebar}
+            className="rounded-md bg-purple-600/90 p-1.5 text-white shadow-lg hover:bg-purple-700/90 transition-colors"
+            aria-label="Open sidebar"
+          >
+            <Menu size={18} />
+          </button>
+        </div>
       )}
 
       {/* Sidebar Desktop */}
-      {!isMobile && <div className="h-screen w-72 flex-shrink-0 overflow-y-auto">{sidebarContent}</div>}
+      {!isMobile && <div className="h-full w-72 flex-shrink-0 overflow-y-auto">{sidebarContent}</div>}
 
       {/* Sidebar Mobile */}
       {isMobile && (

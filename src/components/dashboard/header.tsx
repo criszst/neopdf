@@ -1,24 +1,26 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect, useRef } from "react"
 import Image from "next/image"
-
-
 import { motion, AnimatePresence } from "framer-motion"
-import { Bell, Search, ChevronDown, Settings, LogOut, HelpCircle, X } from "lucide-react"
-
+import type { User } from "next-auth"
+import { Bell, Search, ChevronDown, Calendar, Settings, LogOut, HelpCircle, X, Plus } from "lucide-react"
 import Notification from "@/components/ui/notification"
 
-import HeaderProps from "@/lib/props/HeaderProps"
+interface HeaderProps {
+  user: User | null
+  sidebarOpen: boolean
+  setSidebarOpen: (open: boolean) => void
+  onUpload: () => void
+}
 
-
-const Header: React.FC<HeaderProps> = ({ user }) => {
+const Header: React.FC<HeaderProps> = ({ user, sidebarOpen, setSidebarOpen, onUpload }) => {
   const [showNotification, setShowNotification] = useState(false)
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showIcon, setShowIcon] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
+  const [scrolled, setScrolled] = useState(false)
 
   const userMenuRef = useRef<HTMLDivElement>(null)
 
@@ -30,7 +32,21 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
     }
 
     document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
+
+    const handleScroll = () => {
+      if (window.scrollY > 10) {
+        setScrolled(true)
+      } else {
+        setScrolled(false)
+      }
+    }
+
+    window.addEventListener("scroll", handleScroll)
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+      window.removeEventListener("scroll", handleScroll)
+    }
   }, [])
 
   const toggleNotification = () => {
@@ -47,47 +63,108 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="sticky top-0 z-30 bg-[#0e0525]/90 backdrop-blur-md border-b border-purple-900/20"
+      className={`sticky top-0 z-30 transition-all duration-300 ${
+        scrolled ? "bg-[#0A0118]/90 backdrop-blur-md shadow-lg shadow-purple-900/10" : "bg-transparent"
+      }`}
     >
       <div className="flex items-center justify-between px-4 py-3 lg:px-6">
         {/* Left section */}
         <div className="flex items-center gap-3">
-          <div className="relative flex items-center rounded-full bg-[#1a0f24]/80 w-54 left-10 border border-purple-500/20">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.1 }}
+            className="relative flex items-center rounded-full bg-[#1a0f24]/80 w-64 border border-purple-500/20 overflow-hidden group"
+          >
             <Search size={16} className="absolute left-3 text-purple-400/70" />
             <input
               type="text"
-              placeholder="Search PDFs..."
+              placeholder="Pesquisar PDFs..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="sm:w-30 max-w-xs xs:w-40 bg-transparent py-1.5 pl-9 pr-8 text-sm text-white placeholder-purple-300/50 outline-none rounded-full"
+              className="w-full bg-transparent py-1.5 pl-9 pr-8 text-sm text-white placeholder-purple-300/50 outline-none rounded-full"
             />
             {searchQuery && (
-              <button onClick={clearSearch} className="absolute right-3 text-purple-400/70 hover:text-white">
+              <motion.button
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.5 }}
+                onClick={clearSearch}
+                className="absolute right-3 text-purple-400/70 hover:text-white"
+              >
                 <X size={14} />
-              </button>
+              </motion.button>
             )}
-          </div>
 
+            {/* Animated border on focus */}
+            <motion.div
+              className="absolute bottom-0 left-0 h-[1px] w-0 bg-gradient-to-r from-purple-400 to-purple-600"
+              animate={{ width: searchQuery ? "100%" : "0%" }}
+              transition={{ duration: 0.3 }}
+            />
+          </motion.div>
 
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="hidden md:flex items-center gap-2 ml-2"
+          >
+            <span className="text-sm text-white/70">
+              {new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "short" })}
+            </span>
+            <Calendar size={16} className="text-purple-400" />
+          </motion.div>
         </div>
 
         {/* Right section */}
         <div className="flex items-center gap-3">
-          <button
+          <motion.button
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             className="relative p-2 text-white/70 hover:text-purple-400 rounded-lg hover:bg-purple-500/10 transition-all duration-200"
             onClick={() => setShowNotification(true)}
-            aria-label="Notifications"
+            aria-label="Notificações"
           >
             <Bell size={18} />
-            {showIcon && <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-purple-500"></span>}
-          </button>
+            {showIcon && (
+              <motion.span
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="absolute top-1 right-1 h-2 w-2 rounded-full bg-purple-500"
+              />
+            )}
+          </motion.button>
 
+          <motion.button
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.4 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={onUpload}
+            className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-3 py-1.5 rounded-md flex items-center gap-2 transition-all duration-200 shadow-lg shadow-purple-500/20 text-sm font-medium"
+          >
+            <Plus size={16} />
+            <span className="hidden sm:inline">Novo PDF</span>
+          </motion.button>
 
-          <div className="relative" ref={userMenuRef}>
-            <button
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="relative"
+            ref={userMenuRef}
+          >
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => setShowUserMenu(!showUserMenu)}
               className="flex items-center gap-2 rounded-full hover:bg-purple-500/10 p-1.5 transition-colors"
-              aria-label="User menu"
+              aria-label="Menu do usuário"
             >
               <div className="flex items-center gap-2">
                 <div className="h-8 w-8 overflow-hidden rounded-full bg-gradient-to-br from-purple-500/30 to-purple-700/30 ring-2 ring-purple-500/20">
@@ -114,7 +191,7 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
                 </div>
               </div>
               <ChevronDown size={14} className="text-white/70 hidden sm:block" />
-            </button>
+            </motion.button>
 
             <AnimatePresence>
               {showUserMenu && (
@@ -122,31 +199,40 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
                   initial={{ opacity: 0, y: 10, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  transition={{ duration: 0.15 }}
-                  className="absolute right-0 mt-2 w-56 rounded-lg bg-[#1a0f24] shadow-lg ring-1 ring-purple-500/20 overflow-hidden"
+                  transition={{ duration: 0.15, type: "spring", stiffness: 300, damping: 20 }}
+                  className="absolute right-0 mt-2 w-56 rounded-lg bg-[#1a0f24] shadow-lg shadow-purple-900/20 ring-1 ring-purple-500/20 overflow-hidden"
                 >
                   <div className="p-3 border-b border-purple-900/20">
                     <p className="font-medium text-white">{user?.name}</p>
                     <p className="text-xs text-purple-300/70 truncate">{user?.email}</p>
                   </div>
                   <div className="py-1">
-                    <button className="flex w-full items-center gap-2 px-4 py-2 text-sm text-white/70 hover:bg-purple-500/10 hover:text-white transition-colors">
+                    <motion.button
+                      whileHover={{ x: 5, backgroundColor: "rgba(147, 51, 234, 0.1)" }}
+                      className="flex w-full items-center gap-2 px-4 py-2 text-sm text-white/70 hover:text-white transition-colors"
+                    >
                       <Settings size={16} />
-                      <span>Settings</span>
-                    </button>
-                    <button className="flex w-full items-center gap-2 px-4 py-2 text-sm text-white/70 hover:bg-purple-500/10 hover:text-white transition-colors">
+                      <span>Configurações</span>
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ x: 5, backgroundColor: "rgba(147, 51, 234, 0.1)" }}
+                      className="flex w-full items-center gap-2 px-4 py-2 text-sm text-white/70 hover:text-white transition-colors"
+                    >
                       <HelpCircle size={16} />
-                      <span>Help & Support</span>
-                    </button>
-                    <button className="flex w-full items-center gap-2 px-4 py-2 text-sm text-white/70 hover:bg-purple-500/10 hover:text-white transition-colors">
+                      <span>Ajuda & Suporte</span>
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ x: 5, backgroundColor: "rgba(147, 51, 234, 0.1)" }}
+                      className="flex w-full items-center gap-2 px-4 py-2 text-sm text-white/70 hover:text-white transition-colors"
+                    >
                       <LogOut size={16} />
-                      <span>Sign out</span>
-                    </button>
+                      <span>Sair</span>
+                    </motion.button>
                   </div>
                 </motion.div>
               )}
             </AnimatePresence>
-          </div>
+          </motion.div>
         </div>
       </div>
 

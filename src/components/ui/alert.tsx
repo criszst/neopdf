@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { AlertCircle, Loader2 } from "lucide-react"
+import { AlertCircle, Loader2 } from 'lucide-react'
 
 interface AnimatedAlertProps {
   title: string
@@ -35,7 +35,7 @@ export default function AnimatedAlert({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.9, y: 20 }}
         transition={{ type: "spring", damping: 25, stiffness: 300 }}
-        className="bg-[#151823] rounded-xl border border-purple-900/20 p-6 max-w-md w-full shadow-2xl"
+        className="bg-[#151823] rounded-xl border border-purple-900/20 p-6 max-w-md w-full shadow-2xl shadow-purple-900/20"
       >
         <div className="flex items-start gap-4">
           <div className="flex-shrink-0 bg-red-900/20 rounded-full p-2">
@@ -48,17 +48,21 @@ export default function AnimatedAlert({
         </div>
 
         <div className="flex gap-3 mt-6">
-          <button
+          <motion.button
+            whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.2)" }}
+            whileTap={{ scale: 0.95 }}
             onClick={onCancel}
             disabled={isLoading}
             className="flex-1 py-2 px-4 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors disabled:opacity-50"
           >
             {cancelText}
-          </button>
-          <button
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={onConfirm}
             disabled={isLoading}
-            className="flex-1 py-2 px-4 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 rounded-lg text-white transition-colors flex items-center justify-center gap-2 disabled:opacity-70"
+            className="flex-1 py-2 px-4 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 rounded-lg text-white transition-colors flex items-center justify-center gap-2 disabled:opacity-70 shadow-lg shadow-red-500/20"
           >
             {isLoading ? (
               <>
@@ -68,10 +72,9 @@ export default function AnimatedAlert({
             ) : (
               confirmText
             )}
-          </button>
+          </motion.button>
         </div>
       </motion.div>
     </motion.div>
   )
 }
-

@@ -1,19 +1,21 @@
 "use client"
 
+import type React from "react"
 import { useEffect, useState, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
 import type { User } from "next-auth"
 import { Document, Page, pdfjs } from "react-pdf"
-import { motion, AnimatePresence } from "framer-motion"
-import { Loader2, RotateCw } from 'lucide-react'
+import { AnimatePresence, motion } from "framer-motion"
+import { Loader2, FileText, List } from "lucide-react"
 import PageLoading from "@/components/ui/page-loading"
+import PDFLoading from "@/components/pdf-viewer/pdfLoading"
 
 import Sidebar from "@/components/pdf-viewer/sidebar"
 import Controls from "@/components/pdf-viewer/controls"
 import ToastComponent from "@/components/ui/toast"
+import Thumbnails from "@/components/pdf-viewer/thumbnails"
 
 import { useMediaQuery } from "@/hooks/use-media-query"
-
 
 // Set up the worker for react-pdf
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`
@@ -37,9 +39,10 @@ export default function PDFViewer() {
   const [loading, setLoading] = useState(true)
   const [documentLoading, setDocumentLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [bgColor, setBgColor] = useState("#1e1e2e")
+  const [bgColor, setBgColor] = useState("#0e0525") // Dark background matching dashboard
   const [user, setUser] = useState<User | null>(null)
   const [isStarred, setIsStarred] = useState(false)
+  const [showThumbnails, setShowThumbnails] = useState(false)
   const [toast, setToast] = useState<{
     show: boolean
     type: "success" | "error" | "info"
@@ -51,10 +54,13 @@ export default function PDFViewer() {
     title: "",
     message: "",
   })
-  
+
   const isMobile = useMediaQuery("(max-width: 768px)")
   const containerRef = useRef<HTMLDivElement>(null)
-  
+
+  // Track the actual display scale separately from the user-controlled scale
+  const [displayScale, setDisplayScale] = useState(1.0)
+
   const router = useRouter()
 
   useEffect(() => {
@@ -123,9 +129,16 @@ export default function PDFViewer() {
     }
   }, [id])
 
+  // Update display scale whenever scale or container size changes
+  useEffect(() => {
+    calculateResponsiveScale()
+  }, [scale, isMobile])
+
   function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
     setNumPages(numPages)
     setDocumentLoading(false)
+    // Calculate initial responsive scale after document loads
+    calculateResponsiveScale()
   }
 
   function onDocumentLoadError(error: Error) {
@@ -149,14 +162,26 @@ export default function PDFViewer() {
     }
   }
 
+  const handlePageClick = (page: number) => {
+    if (page >= 1 && page <= (numPages || 1)) {
+      setPageNumber(page)
+    }
+  }
+
   const handleZoomIn = () => {
-    setScale((prev) => Math.min(prev + 0.2, 3))
+    setScale((prev) => {
+      const newScale = Math.min(prev + 0.2, 3)
+      return newScale
+    })
   }
 
   const handleZoomOut = () => {
-    setScale((prev) => Math.max(prev - 0.2, 0.5))
+    setScale((prev) => {
+      const newScale = Math.max(prev - 0.2, 0.5)
+      return newScale
+    })
   }
-  
+
   const handleRotate = () => {
     setRotation((prev) => (prev + 90) % 360)
   }
@@ -176,7 +201,7 @@ export default function PDFViewer() {
           pdfId: id,
         }),
       })
-      
+
       setToast({
         show: true,
         type: "success",
@@ -217,19 +242,19 @@ export default function PDFViewer() {
           isStarred: newStarredState,
         }),
       })
-      
+
       setToast({
         show: true,
         type: "success",
         title: newStarredState ? "Adicionado aos favoritos" : "Removido dos favoritos",
-        message: newStarredState 
-          ? "Este PDF foi adicionado aos seus favoritos." 
+        message: newStarredState
+          ? "Este PDF foi adicionado aos seus favoritos."
           : "Este PDF foi removido dos seus favoritos.",
       })
     } catch (error) {
       console.error("Error toggling star:", error)
       setIsStarred(!isStarred) // Reverter em caso de erro
-      
+
       setToast({
         show: true,
         type: "error",
@@ -251,7 +276,7 @@ export default function PDFViewer() {
         })
       } else {
         await navigator.clipboard.writeText(shareUrl)
-        
+
         setToast({
           show: true,
           type: "success",
@@ -273,7 +298,7 @@ export default function PDFViewer() {
       })
     } catch (error) {
       console.error("Error sharing:", error)
-      
+
       setToast({
         show: true,
         type: "error",
@@ -287,16 +312,39 @@ export default function PDFViewer() {
   const changeBackground = (color: string) => {
     setBgColor(color)
   }
-  
+
   const handlePrint = () => {
     if (pdf?.s3Url) {
-      const printWindow = window.open(pdf.s3Url, '_blank')
+      const printWindow = window.open(pdf.s3Url, "_blank")
       if (printWindow) {
-        printWindow.addEventListener('load', () => {
+        printWindow.addEventListener("load", () => {
           printWindow.print()
         })
       }
     }
+  }
+
+  // Update the toggleThumbnails function to handle mobile differently
+  const toggleThumbnails = () => {
+    setShowThumbnails(!showThumbnails)
+  }
+
+  // Calculate appropriate scale based on container width
+  const calculateResponsiveScale = () => {
+    if (!containerRef.current) {
+      setDisplayScale(scale)
+      return
+    }
+
+    const containerWidth = containerRef.current.clientWidth || 0
+    let newScale = scale
+
+    if (isMobile) {
+      if (containerWidth < 480) newScale = Math.min(scale, 0.6)
+      else if (containerWidth < 768) newScale = Math.min(scale, 0.8)
+    }
+
+    setDisplayScale(newScale)
   }
 
   if (loading) {
@@ -306,25 +354,64 @@ export default function PDFViewer() {
   if (error) {
     return (
       <div className="flex h-screen flex-col items-center justify-center bg-gradient-to-br from-[#0e0525] to-[#1a0f24] text-white">
-        <div className="mb-6 rounded-full bg-red-500/20 p-4">
+        <motion.div
+          className="mb-6 rounded-full bg-red-500/20 p-4"
+          animate={{
+            scale: [1, 1.05, 1],
+            boxShadow: ["0 0 0 rgba(239, 68, 68, 0)", "0 0 20px rgba(239, 68, 68, 0.3)", "0 0 0 rgba(239, 68, 68, 0)"],
+          }}
+          transition={{
+            duration: 2,
+            repeat: Number.POSITIVE_INFINITY,
+            ease: "easeInOut",
+          }}
+        >
           <Loader2 size={32} className="animate-spin text-red-400" />
-        </div>
+        </motion.div>
         <h2 className="mb-2 text-xl font-bold text-white">Erro ao carregar o PDF</h2>
-        <div className="mb-6 text-center text-red-400">
-          {error}
-        </div>
-        <button
+        <div className="mb-6 text-center text-red-400">{error}</div>
+        <motion.button
           onClick={handleBackToDashboard}
           className="flex items-center gap-2 rounded-md bg-purple-600 px-4 py-2 text-white transition-colors hover:bg-purple-700"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
         >
           Voltar ao Dashboard
-        </button>
+        </motion.button>
       </div>
     )
   }
 
   return (
-    <div className="flex h-screen flex-col bg-[#0e0525] text-white">
+    <div className="flex h-screen flex-col bg-gradient-to-br from-[#0e0525] to-[#1a0f24] text-white overflow-hidden">
+      {/* Top toolbar for document title and main actions */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="flex items-center justify-between border-b border-purple-900/20 bg-[#151823]/90 backdrop-blur-md px-4 py-2"
+      >
+        <div className="flex items-center gap-2">
+          <FileText className="h-5 w-5 text-purple-500" />
+          <h1 className="truncate text-sm font-medium text-white md:text-base">{pdf?.name || "Documento"}</h1>
+        </div>
+        <div className="flex items-center gap-2">
+          <motion.button
+            onClick={toggleThumbnails}
+            className={`rounded-md p-1.5 ${
+              showThumbnails
+                ? "bg-purple-600/30 text-purple-400"
+                : "text-gray-400 hover:bg-purple-500/10 hover:text-purple-400"
+            }`}
+            aria-label="Mostrar miniaturas"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <List size={18} />
+          </motion.button>
+        </div>
+      </motion.div>
+
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
         <Sidebar
@@ -341,86 +428,143 @@ export default function PDFViewer() {
         />
 
         {/* Main Content */}
-        <div className="flex flex-1 flex-col">
-          {/* PDF Viewer */}
-          <div
-            ref={containerRef}
-            className="relative flex flex-1 items-center justify-center overflow-auto transition-colors duration-300"
-            style={{ backgroundColor: bgColor }}
-          >
-            {documentLoading && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm">
-                <div className="flex flex-col items-center">
-                  <Loader2 size={40} className="mb-4 animate-spin text-purple-400" />
-                  <p className="text-white">Carregando documento...</p>
-                </div>
-              </div>
+        <div className="flex flex-1 flex-col overflow-hidden">
+          {/* Thumbnails - Mobile (top) */}
+          <AnimatePresence>
+            {showThumbnails && isMobile && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 120, opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="w-full border-b border-purple-900/20 bg-[#151823]/90 backdrop-blur-md"
+                style={{ overflowY: "hidden" }}
+              >
+                <Thumbnails
+                  pdfUrl={pdf?.s3Url || ""}
+                  currentPage={pageNumber}
+                  numPages={numPages || 0}
+                  onPageClick={handlePageClick}
+                />
+              </motion.div>
             )}
+          </AnimatePresence>
 
-  
-            {pdf && (
-              <div className="pdf-container my-4">
-                <Document
-                  file={pdf.s3Url}
-                  onLoadSuccess={onDocumentLoadSuccess}
-                  onLoadError={onDocumentLoadError}
-                  loading={null}
-                  className="pdf-document"
+          <div className="flex flex-1 overflow-hidden">
+            {/* Thumbnails - Desktop (side) */}
+            <AnimatePresence>
+              {showThumbnails && !isMobile && (
+                <motion.div
+                  initial={{ width: 0, opacity: 0 }}
+                  animate={{ width: 180, opacity: 1 }}
+                  exit={{ width: 0, opacity: 0 }}
+                  transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                  className="h-full border-r border-purple-900/20 bg-[#151823]/90 backdrop-blur-md"
                 >
-                  <Page
-                    pageNumber={pageNumber}
-                    scale={scale}
-                    rotate={rotation}
-                    renderTextLayer={false}
-                    renderAnnotationLayer={false}
-                    className="shadow-2xl"
-                    loading={
-                      <div className="flex h-[600px] w-[400px] items-center justify-center rounded-lg bg-zinc-800/50">
-                        <Loader2 size={32} className="animate-spin text-purple-400" />
-                      </div>
-                    }
+                  <Thumbnails
+                    pdfUrl={pdf?.s3Url || ""}
+                    currentPage={pageNumber}
+                    numPages={numPages || 0}
+                    onPageClick={handlePageClick}
                   />
-                </Document>
-              </div>
-            )}
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-            {/* Custom style for PDF via CSS-in-JS */}
-            <style jsx global>{`
-              .pdf-container {
-                padding: 10px;
-                border-radius: 12px;
-                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-                transition: transform 0.3s ease;
-              }
-              
-              .pdf-document {
-                display: flex;
-                justify-content: center;
-              }
-              
-              .react-pdf__Page {
-                margin: 0 auto;
-                border-radius: 8px;
-                overflow: hidden;
-                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
-              }
-              
-              .react-pdf__Page__canvas {
-                border-radius: 8px;
-                display: block !important;
-              }
-              
-              @media (max-width: 640px) {
+            {/* PDF Viewer */}
+            <div
+              ref={containerRef}
+              className="relative flex flex-1 items-center justify-center overflow-auto transition-colors duration-300 text-white"
+              style={{ backgroundColor: bgColor }}
+            >
+              {documentLoading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+                  <PDFLoading />
+                </div>
+              )}
+
+              {pdf && (
+                <motion.div
+                  className="pdf-container my-4 mx-auto"
+                  style={{ maxWidth: isMobile ? "100%" : "90%" }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, ease: "easeOut" }}
+                >
+                  <Document
+                    file={pdf.s3Url}
+                    onLoadSuccess={onDocumentLoadSuccess}
+                    onLoadError={onDocumentLoadError}
+                    loading={null}
+                    className="pdf-document"
+                  >
+                    <Page
+                      pageNumber={pageNumber}
+                      scale={displayScale}
+                      rotate={rotation}
+                      renderTextLayer={false}
+                      renderAnnotationLayer={false}
+                      className="shadow-xl"
+                      width={isMobile && containerRef.current ? containerRef.current.clientWidth - 30 : undefined}
+                      loading={
+                        <div className="flex h-[600px] w-full max-w-[400px] items-center justify-center rounded-lg bg-[#151823]/90">
+                          <PDFLoading />
+                        </div>
+                      }
+                    />
+                  </Document>
+                </motion.div>
+              )}
+
+              {/* Custom style for PDF via CSS-in-JS */}
+              <style jsx global>{`
                 .pdf-container {
-                  padding: 5px;
-                  margin: 5px;
+                  padding: 10px;
+                  border-radius: 12px;
+                  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
+                  transition: transform 0.3s ease;
+                  background: rgba(21, 24, 35, 0.7);
+                  backdrop-filter: blur(8px);
+                  border: 1px solid rgba(147, 51, 234, 0.2);
                 }
-              }
-            `}</style>
+                
+                .pdf-document {                                       
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+                  height: 100%;
+                  width: 100%;
+                }
+                
+                .react-pdf__Page {
+                  margin: 0 auto;
+                  border-radius: 8px;
+                  overflow: hidden;
+                  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.3);
+                }
+                
+                .react-pdf__Page__canvas {
+                  border-radius: 8px;
+                  display: block !important;
+                  max-width: 100% !important;
+                  height: auto !important;
+                }
+                
+                @media (max-width: 640px) {
+                  .pdf-container {
+                    padding: 5px;
+                    margin: 5px;
+                  }
+                  
+                  .react-pdf__Page {
+                    width: 100% !important;
+                  }
+                }
+              `}</style>
+            </div>
           </div>
 
-  
-          <div className=" relative  bg-gradient-to-r from-[#111827] to-[#0f172a] w-full pb-0 text-white"></div>
+          {/* Controls */}
           <Controls
             pageNumber={pageNumber}
             numPages={numPages}
@@ -432,9 +576,7 @@ export default function PDFViewer() {
             onZoomOut={handleZoomOut}
             onRotate={handleRotate}
             onPrint={handlePrint}
-            
           />
- 
         </div>
       </div>
 
@@ -452,3 +594,4 @@ export default function PDFViewer() {
     </div>
   )
 }
+
