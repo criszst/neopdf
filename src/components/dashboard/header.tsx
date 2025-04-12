@@ -3,10 +3,15 @@
 import type React from "react"
 import { useState, useEffect, useRef } from "react"
 import Image from "next/image"
-import { motion, AnimatePresence } from "framer-motion"
 import type { User } from "next-auth"
-import { Bell, Search, ChevronDown, Calendar, Settings, LogOut, HelpCircle, X, Plus } from "lucide-react"
+
+import { Bell, Search, ChevronDown, Settings, LogOut, HelpCircle, X } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
+
 import Notification from "@/components/ui/notification"
+
+import fetchPDFs from "@/lib/api/fetchPdfs"
+import Pdf from "@/lib/props/PdfProps"
 
 interface HeaderProps {
   user: User | null
@@ -22,7 +27,26 @@ const Header: React.FC<HeaderProps> = ({ user, sidebarOpen, setSidebarOpen, onUp
   const [searchQuery, setSearchQuery] = useState("")
   const [scrolled, setScrolled] = useState(false)
 
+  const [pdfs, setPdfs] = useState<Pdf[]>([])
+
   const userMenuRef = useRef<HTMLDivElement>(null)
+
+  // search pdfs when searchQuery is true
+
+  useEffect(() => {
+    if (searchQuery) {
+      const timer = setTimeout(() => {
+        const pdfs = fetchPDFs()
+
+        pdfs.then((data) => {
+          const filteredPdfs = data.filter((pdf: any) => pdf.name.toLowerCase().includes(searchQuery.toLowerCase()))
+          setPdfs(filteredPdfs)
+        })
+      }, 500)
+
+      return () => clearTimeout(timer)
+    }
+  })
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -74,7 +98,7 @@ const Header: React.FC<HeaderProps> = ({ user, sidebarOpen, setSidebarOpen, onUp
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.1 }}
-            className="relative flex items-center rounded-full bg-[#1a0f24]/80 w-64 border border-purple-500/20 overflow-hidden group"
+            className="relative flex items-center rounded-full left-10 bg-[#1a0f24]/80 overflow-hidden group"
           >
             <Search size={16} className="absolute left-3 text-purple-400/70" />
             <input
@@ -82,7 +106,7 @@ const Header: React.FC<HeaderProps> = ({ user, sidebarOpen, setSidebarOpen, onUp
               placeholder="Pesquisar PDFs..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-transparent py-1.5 pl-9 pr-8 text-sm text-white placeholder-purple-300/50 outline-none rounded-full"
+              className="w-full bg-transparent py-1.5 pl-10 text-sm text-white placeholder-purple-300/50 outline-none rounded-full"
             />
             {searchQuery && (
               <motion.button
@@ -104,17 +128,6 @@ const Header: React.FC<HeaderProps> = ({ user, sidebarOpen, setSidebarOpen, onUp
             />
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="hidden md:flex items-center gap-2 ml-2"
-          >
-            <span className="text-sm text-white/70">
-              {new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "short" })}
-            </span>
-            <Calendar size={16} className="text-purple-400" />
-          </motion.div>
         </div>
 
         {/* Right section */}
@@ -139,18 +152,6 @@ const Header: React.FC<HeaderProps> = ({ user, sidebarOpen, setSidebarOpen, onUp
             )}
           </motion.button>
 
-          <motion.button
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.4 }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={onUpload}
-            className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-3 py-1.5 rounded-md flex items-center gap-2 transition-all duration-200 shadow-lg shadow-purple-500/20 text-sm font-medium"
-          >
-            <Plus size={16} />
-            <span className="hidden sm:inline">Novo PDF</span>
-          </motion.button>
 
           <motion.div
             initial={{ opacity: 0 }}

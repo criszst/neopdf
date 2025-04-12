@@ -1,4 +1,4 @@
-const fetchPDFs = async(): Promise<void> => {
+ const fetchPDFs = async(): Promise<any> => {
   try {
     const res = await fetch("/api/pdf")
     if (!res.ok) throw new Error("Failed to fetch PDFs")
@@ -10,3 +10,5 @@ const fetchPDFs = async(): Promise<void> => {
     return console.error("Error fetching PDFs:", error)
   }
 }
+
+export default fetchPDFs;

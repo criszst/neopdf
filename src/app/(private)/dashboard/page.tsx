@@ -212,7 +212,7 @@ export default function Dashboard() {
       <SideBar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col w-full relative z-10">
+      <div className="flex-1 flex flex-col w-full relative z-10 h-screen">
         {/* Header */}
         <Header user={user} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} onUpload={handleUploadClick} />
 
@@ -227,24 +227,10 @@ export default function Dashboard() {
           >
             <div className="flex items-center gap-2 mb-4 sm:mb-0">
               <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-              <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.3, duration: 0.5 }}
-              >
-                <Sparkles className="h-5 w-5 text-purple-400" />
-              </motion.div>
+
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="hidden md:flex items-center gap-2 bg-[#151823] rounded-full px-3 py-1.5">
-                <div className="flex -space-x-2 mr-2">
-                  <div className="h-6 w-6 rounded-full bg-purple-500 border-2 border-[#151823]"></div>
-                  <div className="h-6 w-6 rounded-full bg-blue-500 border-2 border-[#151823]"></div>
-                  <div className="h-6 w-6 rounded-full bg-green-500 border-2 border-[#151823]"></div>
-                </div>
-                <span className="text-white text-sm">{pdfs.length} PDFs</span>
-              </div>
               
               <motion.div 
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -293,40 +279,6 @@ export default function Dashboard() {
           </motion.div>
 
          
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="mb-8 overflow-x-auto pb-2 hide-scrollbar"
-          >
-            <div className="flex space-x-2">
-              {Array.from({ length: 13 }).map((_, i) => {
-                const day = i + 1;
-                const isActive = day === 10;
-                const dayName = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"][day % 7];
-                
-                return (
-                  <motion.button
-                    key={day}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: 0.1 + i * 0.03 }}
-                    whileHover={{ y: -2, transition: { duration: 0.2 } }}
-                    whileTap={{ scale: 0.95 }}
-                    className={`flex flex-col items-center justify-center p-3 rounded-lg transition-all min-w-[60px] ${
-                      isActive
-                        ? "bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/20"
-                        : "bg-[#1a0f24] text-white/70 hover:bg-[#251539] hover:text-white"
-                    }`}
-                  >
-                    <span className="text-lg font-medium">{day.toString().padStart(2, '0')}</span>
-                    <span className="text-xs mt-1">{dayName}</span>
-                  </motion.button>
-                );
-              })}
-            </div>
-          </motion.div>
-
           {/* PDFs Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -337,15 +289,7 @@ export default function Dashboard() {
             <div className="bg-[#151823]/80 backdrop-blur-sm rounded-xl border border-purple-900/20 p-6 shadow-xl shadow-purple-900/5">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-bold text-white">Seus PDFs</h2>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleUploadClick}
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm font-medium shadow-md shadow-purple-500/20 transition-all duration-200"
-                >
-                  <Plus size={16} />
-                  <span>Adicionar PDF</span>
-                </motion.button>
+
               </div>
 
               {pdfs.length === 0 ? (
@@ -374,15 +318,6 @@ export default function Dashboard() {
                   <p className="text-white/70 mb-6 max-w-md">
                     Faça upload do seu primeiro PDF para começar a usar os recursos poderosos do NeoPDF.
                   </p>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={handleUploadClick}
-                    className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-lg shadow-purple-500/20 transition-all duration-200"
-                  >
-                    <Plus size={18} />
-                    <span>Adicionar PDF</span>
-                  </motion.button>
                 </motion.div>
               ) : (
                 <div className="relative">
@@ -400,15 +335,16 @@ export default function Dashboard() {
           {/* Metrics Cards */}
           <MetricCards />
 
-          {/* Analytics Chart */}
-          <div className="mb-8">
+          {/* TODO: move the analytics charts to a new page about all pdf analytics */}
+
+          {/* <div className="mb-8">
             <AnalyticsChart />
-          </div>
+          </div> */}
 
           {/* Bottom Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-8">
             <RecentActivity />
-            <PdfTypes />
+          
             <QuickActions onUpload={handleUploadClick} />
           </div>
         </div>
