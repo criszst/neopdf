@@ -3,25 +3,21 @@
 import { useEffect, useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import type { User } from "next-auth"
-import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
-import { Plus, Filter, Grid, List, ChevronDown, Sparkles } from 'lucide-react'
+import { motion, AnimatePresence } from "framer-motion"
+import { Plus, Filter, Grid, List, ChevronDown, FileText, BarChart2, Clock, Settings, Search } from 'lucide-react'
 
 import SideBar from "@/components/dashboard/sidebar"
 import Header from "@/components/dashboard/header"
 import MetricCards from "@/components/dashboard/metric"
-import AnalyticsChart from "@/components/dashboard/chart"
 import RecentActivity from "@/components/dashboard/ractivity"
-import PdfTypes from "@/components/dashboard/types"
 import QuickActions from "@/components/dashboard/qactions"
 import FileUpload from "@/components/animations/FileUpload"
 import PageLoading from "@/components/ui/page-loading"
 import ToastComponent from "@/components/ui/toast"
 import AnimatedAlert from "@/components/ui/alert"
-import DashboardAdapter from "@/components/dashboard/dashboard-adapter"
-import { theme } from "@/lib/colors/theme-config"
+import PDFList from "@/components/dashboard/pdfs"
 import type ToastProps from "@/lib/props/ToastProps"
 import type Pdf from "@/lib/props/PdfProps"
-import PdfGalleryModal from "@/components/pdf-viewer/pdfGallery"
 
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null)
@@ -39,15 +35,10 @@ export default function Dashboard() {
     title: "",
     message: "",
   })
+  const [activeItem, setActiveItem] = useState("dashboard")
+  const [showMobileSearch, setShowMobileSearch] = useState(false)
 
   const containerRef = useRef(null)
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end start"]
-  })
-  
-  const backgroundOpacity = useTransform(scrollYProgress, [0, 0.5], [0.2, 0.8])
-
   const router = useRouter()
 
   useEffect(() => {
@@ -175,178 +166,211 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="relative flex min-h-screen overflow-hidden" style={{ background: theme.colors.background.primary }}>
+    <div className="relative flex min-h-screen overflow-hidden bg-[#0A0118]">
       {/* Animated background */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-br from-purple-900/10 to-blue-900/5" />
         <div className="absolute top-0 left-0 w-full h-full bg-[url('/grid.svg')] bg-repeat opacity-10" />
-        <motion.div 
+        <motion.div
           className="absolute top-20 -left-40 w-96 h-96 rounded-full bg-purple-600/20 blur-3xl"
-          animate={{ 
-            x: [0, 30, 0], 
+          animate={{
+            x: [0, 30, 0],
             y: [0, 20, 0],
-            opacity: [0.2, 0.3, 0.2] 
+            opacity: [0.2, 0.3, 0.2],
           }}
-          transition={{ 
-            duration: 8, 
-            repeat: Infinity,
-            ease: "easeInOut" 
+          transition={{
+            duration: 8,
+            repeat: Number.POSITIVE_INFINITY,
+            ease: "easeInOut",
           }}
         />
-        <motion.div 
+        <motion.div
           className="absolute bottom-20 -right-40 w-96 h-96 rounded-full bg-blue-600/20 blur-3xl"
-          animate={{ 
-            x: [0, -30, 0], 
+          animate={{
+            x: [0, -30, 0],
             y: [0, -20, 0],
-            opacity: [0.2, 0.3, 0.2] 
+            opacity: [0.2, 0.3, 0.2],
           }}
-          transition={{ 
-            duration: 10, 
-            repeat: Infinity,
-            ease: "easeInOut" 
+          transition={{
+            duration: 10,
+            repeat: Number.POSITIVE_INFINITY,
+            ease: "easeInOut",
           }}
         />
       </div>
 
       {/* Sidebar */}
-      <SideBar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+      <SideBar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} user={user} onLogout={handleDeletePDF} />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col w-full relative z-10 h-screen">
+      <div className="flex-1 flex flex-col w-full relative z-10">
         {/* Header */}
-        <Header user={user} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} onUpload={handleUploadClick} />
+        <Header 
+          user={user} 
+          sidebarOpen={sidebarOpen} 
+          setSidebarOpen={setSidebarOpen} 
+          onUpload={handleUploadClick}
+          pdfs={pdfs}
+        />
 
         {/* Content */}
         <div ref={containerRef} className="flex-1 p-4 lg:p-6 overflow-auto">
-          {/* Title and actions */}
-          <motion.div 
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="flex flex-col sm:flex-row sm:items-center justify-between mb-6"
-          >
-            <div className="flex items-center gap-2 mb-4 sm:mb-0">
-              <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-
-            </div>
-
-            <div className="flex items-center gap-3">
-              
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.2, duration: 0.3 }}
-                className="flex items-center bg-[#1a0f24] rounded-lg p-1"
-              >
-                <button
-                  onClick={() => setViewMode("grid")}
-                  className={`p-1.5 rounded-md transition-all ${viewMode === "grid" ? "bg-purple-500/20 text-purple-400" : "text-white/70 hover:text-white"}`}
-                >
-                  <Grid size={18} />
-                </button>
-                <button
-                  onClick={() => setViewMode("list")}
-                  className={`p-1.5 rounded-md transition-all ${viewMode === "list" ? "bg-purple-500/20 text-purple-400" : "text-white/70 hover:text-white"}`}
-                >
-                  <List size={18} />
-                </button>
-              </motion.div>
-
-              <motion.button 
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.3, duration: 0.3 }}
-                className="flex items-center gap-2 bg-[#1a0f24] text-white/70 hover:text-white px-3 py-1.5 rounded-lg text-sm"
-              >
-                <Filter size={16} />
-                <span>Filter</span>
-                <ChevronDown size={14} />
-              </motion.button>
-
-              <motion.button
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.4, duration: 0.3 }}
-                onClick={handleUploadClick}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm font-medium shadow-lg shadow-purple-500/20"
-              >
-                <Plus size={16} />
-                <span>Novo PDF</span>
-              </motion.button>
-            </div>
-          </motion.div>
-
-         
-          {/* PDFs Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="mb-8"
-          >
-            <div className="bg-[#151823]/80 backdrop-blur-sm rounded-xl border border-purple-900/20 p-6 shadow-xl shadow-purple-900/5">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-bold text-white">Seus PDFs</h2>
-
+          {/* Main content container with max width to prevent excessive scrolling */}
+          <div className="max-w-7xl mx-auto">
+            {/* Title and actions */}
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="flex flex-col sm:flex-row sm:items-center justify-between mb-6"
+            >
+              <div className="flex items-center gap-2 mb-4 sm:mb-0">
+                <h1 className="text-2xl font-bold text-white">Meus PDFs</h1>
               </div>
 
-              {pdfs.length === 0 ? (
-                <motion.div 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.5 }}
-                  className="flex flex-col items-center justify-center py-12 text-center"
+              <div className="flex items-center gap-3">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.2, duration: 0.3 }}
+                  className="flex items-center bg-[#1A1A2E] rounded-lg p-1"
                 >
-                  <div className="h-16 w-16 rounded-full bg-purple-500/10 flex items-center justify-center mb-4">
-                    <motion.div
-                      animate={{ 
-                        scale: [1, 1.1, 1],
-                        rotate: [0, 5, 0, -5, 0],
-                      }}
-                      transition={{ 
-                        duration: 3,
-                        repeat: Infinity,
-                        ease: "easeInOut"
-                      }}
-                    >
-                      <Plus size={24} className="text-purple-400" />
-                    </motion.div>
-                  </div>
-                  <h3 className="text-lg font-medium text-white mb-2">Nenhum PDF ainda</h3>
-                  <p className="text-white/70 mb-6 max-w-md">
-                    Faça upload do seu primeiro PDF para começar a usar os recursos poderosos do NeoPDF.
-                  </p>
+                  <button
+                    onClick={() => setViewMode("grid")}
+                    className={`p-1.5 rounded-md transition-all ${viewMode === "grid" ? "bg-purple-500/20 text-purple-400" : "text-white/70 hover:text-white"}`}
+                  >
+                    <Grid size={18} />
+                  </button>
+                  <button
+                    onClick={() => setViewMode("list")}
+                    className={`p-1.5 rounded-md transition-all ${viewMode === "list" ? "bg-purple-500/20 text-purple-400" : "text-white/70 hover:text-white"}`}
+                  >
+                    <List size={18} />
+                  </button>
                 </motion.div>
-              ) : (
-                <div className="relative">
-                  <FileUpload 
-                    onUploadComplete={handleUploadComplete} 
-                    className="mb-6" 
-                    showLabel={true} 
-                  />
-                  <DashboardAdapter pdfs={pdfs} onDelete={handleDeleteRequest} viewMode={viewMode} />
-                </div>
-              )}
-            </div>
-          </motion.div>
 
-          {/* Metrics Cards */}
-          <MetricCards />
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.3, duration: 0.3 }}
+                  className="flex items-center gap-2 bg-[#1A1A2E] text-white/70 hover:text-white px-3 py-1.5 rounded-lg text-sm"
+                >
+                  <Filter size={16} />
+                  <span className="hidden sm:inline">Filtrar</span>
+                  <ChevronDown size={14} />
+                </motion.button>
 
-          {/* TODO: move the analytics charts to a new page about all pdf analytics */}
-
-          {/* <div className="mb-8">
-            <AnalyticsChart />
-          </div> */}
-
-          {/* Bottom Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-8">
-            <RecentActivity />
           
-            <QuickActions onUpload={handleUploadClick} />
+              </div>
+            </motion.div>
+
+            {/* Two column layout for better space utilization */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+              {/* PDFs Section - Takes 2/3 of the space */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                className="lg:col-span-2"
+              >
+                <div className="bg-[#151525] backdrop-blur-sm rounded-xl border border-purple-900/20 p-6 shadow-xl shadow-purple-900/5 h-full">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-lg font-bold text-white">Biblioteca de PDFs</h2>
+                    <span className="text-sm text-white/50">{pdfs.length} arquivos</span>
+                  </div>
+
+                  {pdfs.length === 0 ? (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.5 }}
+                      className="flex flex-col items-center justify-center py-12 text-center"
+                    >
+                      <div className="h-16 w-16 rounded-full bg-purple-500/10 flex items-center justify-center mb-4">
+                        <motion.div
+                          animate={{
+                            scale: [1, 1.1, 1],
+                            rotate: [0, 5, 0, -5, 0],
+                          }}
+                          transition={{
+                            duration: 3,
+                            repeat: Number.POSITIVE_INFINITY,
+                            ease: "easeInOut",
+                          }}
+                        >
+                          <Plus size={24} className="text-purple-400" />
+                        </motion.div>
+                      </div>
+                      <h3 className="text-lg font-medium text-white mb-2">Nenhum PDF ainda</h3>
+                      <p className="text-white/70 mb-6 max-w-md">
+                        Faça upload do seu primeiro PDF para começar a usar os recursos poderosos do NeoPDF.
+                      </p>
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={handleUploadClick}
+                        className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-lg shadow-purple-500/20 transition-all duration-200"
+                      >
+                        <Plus size={18} />
+                        <span>Adicionar PDF</span>
+                      </motion.button>
+                    </motion.div>
+                  ) : (
+                    <div className="relative">
+                      <PDFList pdfs={pdfs} onDelete={handleDeleteRequest} viewMode={viewMode} />
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+
+              {/* Quick Actions - Takes 1/3 of the space */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+              >
+                <QuickActions onUpload={handleUploadClick} />
+              </motion.div>
+            </div>
+
+            {/* Metrics Cards */}
+            <MetricCards />
+
+            {/* Recent Activity */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
+              className="mb-8"
+            >
+              <RecentActivity />
+            </motion.div>
           </div>
+        </div>
+      </div>
+
+      {/* Mobile Bottom Navigation - only visible on small screens */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-[#151525] border-t border-purple-900/20 z-40">
+        <div className="flex justify-around py-3">
+          {["dashboard", "files", "search", "activity", "settings"].map((item, index) => (
+            <button
+              key={item}
+              onClick={() => {
+                if (item === "search") {
+                  setShowMobileSearch(true)
+                } else {
+                  setActiveItem(item)
+                }
+              }}
+              className={`relative p-2 ${activeItem === item ? "text-purple-400" : "text-white/70"}`}
+            >
+              {item === "dashboard" && <Grid size={22} />}
+              {item === "files" && <FileText size={22} />}
+              {item === "search" && <Search size={22} />}
+              {item === "activity" && <Clock size={22} />}
+              {item === "settings" && <Settings size={22} />}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -363,7 +387,7 @@ export default function Dashboard() {
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="bg-[#151823] rounded-xl border border-purple-900/20 p-6 max-w-md w-full shadow-2xl shadow-purple-900/20"
+              className="bg-[#151525] rounded-xl border border-purple-900/20 p-6 max-w-md w-full shadow-2xl shadow-purple-900/20"
             >
               <h2 className="text-xl font-bold text-white mb-4">Upload PDF</h2>
               <FileUpload onUploadComplete={handleUploadComplete} />

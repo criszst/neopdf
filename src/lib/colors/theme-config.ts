@@ -1,29 +1,30 @@
+// Configuração de tema para o NeoPDF
 export const theme = {
   colors: {
     // Cores principais
     background: {
       primary: "#0A0118", // Fundo principal mais escuro
-      secondary: "#110627", // Fundo secundário
-      tertiary: "#1A0F24", // Fundo de cards
-      card: "#151823", // Fundo de cards com transparência
+      secondary: "#0F0A1F", // Fundo secundário
+      tertiary: "#151525", // Fundo de cards
+      card: "#1A1A2E", // Fundo de cards com transparência
     },
     purple: {
-      primary: "#9333EA", // Roxo principal
-      light: "#A855F7", // Roxo claro
-      dark: "#7E22CE", // Roxo escuro
+      primary: "#8B5CF6", // Roxo principal mais vibrante
+      light: "#A78BFA", // Roxo claro
+      dark: "#7C3AED", // Roxo escuro
       gradient: {
-        from: "#9333EA",
-        to: "#7928CA",
+        from: "#8B5CF6",
+        to: "#6D28D9",
       },
     },
     text: {
       primary: "#FFFFFF",
-      secondary: "rgba(255, 255, 255, 0.7)",
-      muted: "rgba(255, 255, 255, 0.5)",
+      secondary: "rgba(255, 255, 255, 0.8)",
+      muted: "rgba(255, 255, 255, 0.6)",
     },
     border: {
-      primary: "rgba(147, 51, 234, 0.2)",
-      hover: "rgba(147, 51, 234, 0.4)",
+      primary: "rgba(139, 92, 246, 0.2)",
+      hover: "rgba(139, 92, 246, 0.4)",
     },
   },
   animation: {

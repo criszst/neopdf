@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { FileText, MoreHorizontal, Download, Eye, Trash2, Star, Share } from "lucide-react"
+import { FileText, MoreHorizontal, Download, Eye, Trash2, Star, Share, ArrowRight } from 'lucide-react'
 import { motion } from "framer-motion"
 import { formatDistanceToNow } from "date-fns"
 import { ptBR } from "date-fns/locale"
@@ -57,6 +57,7 @@ const RecentActivity = () => {
       case "DELETE":
         return <Trash2 className="h-5 w-5 text-red-400" />
       case "STAR":
+        return <Star className="h-5 w-5 text-yellow-400" />
       case "UNSTAR":
         return <Star className="h-5 w-5 text-yellow-400" />
       case "SHARE":
@@ -95,9 +96,9 @@ const RecentActivity = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.2 }}
-        className="bg-[#151823]/80 backdrop-blur-sm rounded-xl border border-purple-900/20 h-full"
+        className="bg-[#151525] backdrop-blur-sm rounded-xl border border-purple-900/20 h-full shadow-lg"
       >
-        <div className="p-6">
+        <div className="p-6 h-full">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold text-white">Atividades Recentes</h2>
           </div>
@@ -128,7 +129,7 @@ const RecentActivity = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.2 }}
-        className="bg-[#151823]/80 backdrop-blur-sm rounded-xl border border-purple-900/20 h-full"
+        className="bg-[#151525] backdrop-blur-sm rounded-xl border border-purple-900/20 h-full shadow-lg"
       >
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
@@ -145,20 +146,21 @@ const RecentActivity = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.2 }}
-      className="bg-[#151823]/80 backdrop-blur-sm rounded-xl border border-purple-900/20 h-full"
+      className="bg-[#151525] backdrop-blur-sm rounded-xl border border-purple-900/20 h-full shadow-lg"
     >
       <div className="p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-white">Atividades Recentes</h2>
-          <button className="p-1.5 rounded-lg hover:bg-purple-500/10 text-zinc-400 hover:text-purple-400 transition-colors">
-            <MoreHorizontal className="h-5 w-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button className="text-xs text-purple-400 hover:text-purple-300 transition-colors">Ver todas</button>
+            <ArrowRight size={14} className="text-purple-400" />
+          </div>
         </div>
 
         {activities.length === 0 ? (
           <div className="text-center py-8 text-zinc-400">Nenhuma atividade recente</div>
         ) : (
-          <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+          <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
             {activities.map((activity) => (
               <motion.div
                 key={activity.id}
@@ -167,7 +169,7 @@ const RecentActivity = () => {
                 transition={{ duration: 0.3 }}
                 className="flex items-center space-x-4 p-3 rounded-lg hover:bg-purple-500/5 transition-colors group border border-transparent hover:border-purple-500/20"
               >
-                <div className="rounded-lg bg-purple-500/10 p-2.5 border border-purple-500/20">
+                <div className="rounded-lg bg-[#1A1A2E] p-2.5 border border-purple-500/20">
                   {getActivityIcon(activity.type)}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -207,12 +209,12 @@ const RecentActivity = () => {
         }
         
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(147, 51, 234, 0.3);
+          background: rgba(139, 92, 246, 0.3);
           border-radius: 10px;
         }
         
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(147, 51, 234, 0.5);
+          background: rgba(139, 92, 246, 0.5);
         }
       `}</style>
     </motion.div>
@@ -220,4 +222,3 @@ const RecentActivity = () => {
 }
 
 export default RecentActivity
-

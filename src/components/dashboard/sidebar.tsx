@@ -1,241 +1,136 @@
 "use client"
 
-import type React from "react"
-
-import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import {
-  FileText,
-  LayoutGrid,
-  Star,
-  Clock,
-  Settings,
-  HelpCircle,
-  Menu,
-  X,
-  Users,
-  BarChart2,
-  Calendar,
-  PieChart,
-  ShoppingCart,
-} from "lucide-react"
-import fetchStats from "@/lib/api/fetchStats"
-import type UserStats from "@/lib/interfaces/UserStats"
+import { useState } from "react"
+import { motion } from "framer-motion"
+import { FileText, LayoutGrid, Star, Clock, Settings, Users, BarChart2, Calendar, PieChart } from 'lucide-react'
+import type { User } from "next-auth"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
 
 interface SideBarProps {
   sidebarOpen: boolean
   setSidebarOpen: (open: boolean) => void
+  user?: User | null
+  onLogout?: () => void
 }
 
-const SideBar: React.FC<SideBarProps> = ({ sidebarOpen, setSidebarOpen }) => {
-  const [stats, setStats] = useState<UserStats | null>(null)
-  const [activeItem, setActiveItem] = useState("dashboard")
-  const [isCollapsed, setIsCollapsed] = useState(false)
+interface MenuItem {
+  id: string;
+  icon: React.ElementType;
+  label: string;
+  badge?: number;
+  href: string;
+}
 
-  const getStats = async () => {
-    try {
-      const session = fetchStats()
-      const data = await session.then((res) => res.json())
-      setStats(data || null)
-    } catch (error) {
-      console.error("Error fetching stats:", error)
-    }
-  }
-
-  useEffect(() => {
-    getStats()
-  }, [])
-
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 1024) {
-        setIsCollapsed(true)
-      } else if (window.innerWidth >= 1280) {
-        setIsCollapsed(false)
-      }
-    }
-
-    // Set initial state
-    handleResize()
-
-    window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
-  }, [])
+const SideBar: React.FC<SideBarProps> = ({ sidebarOpen, setSidebarOpen, user, onLogout = () => {} }) => {
+  const pathname = usePathname()
+  const [notifications] = useState({
+    messages: 2,
+    calls: 3,
+  })
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen)
   }
 
-  const toggleCollapse = () => {
-    setIsCollapsed(!isCollapsed)
-  }
-
-  const menuItems = [
-    { id: "dashboard", icon: LayoutGrid, label: "Dashboard" },
-    { id: "files", icon: FileText, label: "Meus Arquivos" },
-    { id: "starred", icon: Star, label: "Favoritos" },
-    { id: "recent", icon: Clock, label: "Recentes" },
-    { id: "shared", icon: Users, label: "Compartilhados" },
+  const menuItems: MenuItem[] = [
+    { id: "dashboard", icon: LayoutGrid, label: "Dashboard", href: "/dashboard" },
+    { id: "files", icon: FileText, label: "Meus Arquivos", badge: 3, href: "/dashboard/files" },
+    { id: "starred", icon: Star, label: "Favoritos", href: "/dashboard/starred" },
+    { id: "recent", icon: Clock, label: "Recentes", href: "/dashboard/recent" },
+    { id: "shared", icon: Users, label: "Compartilhados", href: "/dashboard/shared" },
   ]
 
-  const analyticsItems = [
-    { id: "analytics", icon: BarChart2, label: "Análises" },
-    { id: "calendar", icon: Calendar, label: "Calendário" },
-    { id: "reports", icon: PieChart, label: "Reportes" },
+  const analyticsItems: MenuItem[] = [
+    { id: "analytics", icon: BarChart2, label: "Análises", href: "/dashboard/analytics" },
+    { id: "calendar", icon: Calendar, label: "Calendário", href: "/dashboard/calendar" },
+    { id: "reports", icon: PieChart, label: "Relatórios", href: "/dashboard/reports" },
   ]
 
-  const renderMenuItem = (item: (typeof menuItems)[0]) => {
-    const isActive = activeItem === item.id
-
-    return (
-      <button
-        key={item.id}
-        onClick={() => setActiveItem(item.id)}
-        className={`flex items-center gap-3 w-full rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-          isActive
-            ? "bg-purple-500/20 text-purple-400 border border-purple-500/20"
-            : "text-white/70 hover:text-white hover:bg-purple-500/10"
-        }`}
-      >
-        <item.icon size={18} className={isActive ? "text-purple-400" : ""} />
-        {!isCollapsed && <span>{item.label}</span>}
-      </button>
-    )
-  }
-
-  const sidebarContent = (
-    <div
-      className={`flex h-full flex-col bg-[#0e0525] text-white transition-all duration-300 ${
-        isCollapsed ? "w-16" : "w-64"
-      }`}
-    >
-      {/* Logo */}
-      <div className="p-4 flex items-center justify-between border-b border-purple-900/20">
-        {!isCollapsed ? (
-          <>
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-md bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center">
-                <FileText size={16} className="text-white" />
-              </div>
-              <div>
-                <span className="text-lg font-bold bg-gradient-to-r from-purple-400 via-purple-500 to-purple-600 bg-clip-text text-transparent">
-                  Neo
-                </span>
-                <span className="text-lg font-bold text-white">PDF</span>
-              </div>
-            </div>
-            <button
-              onClick={toggleCollapse}
-              className="rounded-md p-1.5 text-white/70 hover:bg-purple-500/10 hover:text-white"
-            >
-              <X size={16} />
-            </button>
-          </>
-        ) : (
-          <button
-            onClick={toggleCollapse}
-            className="mx-auto rounded-md p-1.5 text-white/70 hover:bg-purple-500/10 hover:text-white"
+  const verticalIconBar = (
+    <div className="fixed left-4 top-1/2 -translate-y-1/2 z-40 flex flex-col items-center py-6 rounded-full bg-[#151525] shadow-xl shadow-purple-900/20 border border-purple-900/20">
+      {/* Main icons */}
+      <div className="flex flex-col items-center gap-5 px-3 py-4">
+        {menuItems.map((item, index) => (
+          <motion.div
+            key={item.id}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: index * 0.05 }}
+            className="relative"
           >
-            <Menu size={18} />
-          </button>
-        )}
+            <Link href={item.href} passHref>
+              <div 
+                className={`w-10 h-10 flex items-center justify-center rounded-full 
+                  ${pathname === item.href ? "bg-purple-600 text-white" : "bg-[#1A1A2E] text-white/70 hover:text-white"}
+                  hover:scale-110 transition-transform duration-200
+                `}
+              >
+                <item.icon size={18} />
+                
+                {item.badge && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-purple-500 flex items-center justify-center text-xs font-medium text-white"
+                  >
+                    {item.badge}
+                  </motion.div>
+                )}
+              </div>
+            </Link>
+          </motion.div>
+        ))}
       </div>
 
-      {/* Navigation */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-6">
-        {/* Main menu */}
-        <div className="space-y-1">{menuItems.map(renderMenuItem)}</div>
+      {/* Divider */}
+      <div className="w-8 h-px bg-purple-900/20 my-2"></div>
 
-        {/* Analytics section */}
-        {!isCollapsed && (
-          <div className="pt-2">
-            <p className="px-3 py-2 text-xs font-medium text-purple-400/70 uppercase tracking-wider">Análises</p>
-          </div>
-        )}
-
-        <div className="space-y-1">{analyticsItems.map(renderMenuItem)}</div>
-
-        {/* Settings section */}
-        <div className="space-y-1 pt-2">
-          {renderMenuItem({ id: "settings", icon: Settings, label: "Configurações" })}
-          {renderMenuItem({ id: "help", icon: HelpCircle, label: "Ajuda & Suporte" })}
-        </div>
-      </div>
-
-      {/* Storage */}
-      {!isCollapsed && (
-        <div className="p-4 mt-auto border-t border-purple-900/20">
-          <div className="p-3 rounded-lg bg-gradient-to-br from-purple-500/10 via-purple-500/5 to-transparent border border-purple-500/20">
-            <h4 className="text-sm font-medium text-white mb-2">Armazenamento</h4>
-            <div className="w-full h-2 bg-[#1a0f24] rounded-full overflow-hidden">
+      {/* Secondary icons */}
+      <div className="flex flex-col items-center gap-5 px-3 py-4">
+        {analyticsItems.slice(0, 2).map((item, index) => (
+          <motion.div
+            key={item.id}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: (index + 5) * 0.05 }}
+            className="relative"
+          >
+            <Link href={item.href} passHref>
               <div
-                style={{ width: `${stats?.storage?.percentage || 35}%` }}
-                className="h-full bg-gradient-to-r from-purple-400 to-purple-600 rounded-full"
-              />
-            </div>
-            <p className="text-xs text-purple-300/70 mt-2">
-              {stats?.storage?.used
-                ? `${(stats.storage.used / (1024 * 1024)).toFixed(1)} MB / ${(stats.storage.limit / (1024 * 1024)).toFixed(1)} MB`
-                : "3.5 GB / 10 GB usado"}
-            </p>
-          </div>
-        </div>
-      )}
+                className={`w-10 h-10 flex items-center justify-center rounded-full 
+                  ${pathname === item.href ? "bg-purple-600 text-white" : "bg-[#1A1A2E] text-white/70 hover:text-white"}
+                  hover:scale-110 transition-transform duration-200
+                `}
+              >
+                <item.icon size={18} />
+              </div>
+            </Link>
+          </motion.div>
+        ))}
+      </div>
 
-      {/* Upgrade button */}
-      {!isCollapsed && (
-        <div className="p-4">
-          <button className="w-full py-2 px-3 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 rounded-lg text-white text-sm font-medium flex items-center justify-center gap-2 shadow-lg shadow-purple-500/20">
-            <ShoppingCart size={16} />
-            <span>Atualizar Plano</span>
-          </button>
-        </div>
-      )}
+      {/* Settings button */}
+      <div className="w-8 h-px bg-purple-900/20 my-2"></div>
+      <div className="px-3 py-4">
+        <Link href="/dashboard/settings" passHref>
+          <div
+            className={`w-10 h-10 flex items-center justify-center rounded-full 
+              ${pathname === "/dashboard/settings" ? "bg-purple-600 text-white" : "bg-[#1A1A2E] text-white/70 hover:text-white"}
+              hover:scale-110 transition-transform duration-200
+            `}
+          >
+            <Settings size={18} />
+          </div>
+        </Link>
+      </div>
     </div>
   )
 
   return (
     <>
-      {/* Overlay for mobile */}
-      <AnimatePresence>
-        {sidebarOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
-            onClick={() => setSidebarOpen(false)}
-            aria-hidden="true"
-          />
-        )}
-      </AnimatePresence>
-
-      {/* Mobile toggle button */}
-      <button
-        onClick={toggleSidebar}
-        className="lg:hidden fixed left-2 top-4 z-50 rounded-md bg-purple-600 p-2 text-white shadow-lg"
-        aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
-      >
-        {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
-      </button>
-
-      {/* Desktop sidebar */}
-      <div className="hidden lg:block h-full sticky top-0">{sidebarContent}</div>
-
-      {/* Mobile sidebar */}
-      <AnimatePresence>
-        {sidebarOpen && (
-          <motion.div
-            initial={{ x: "-100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "-100%" }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed left-0 top-0 z-50 h-screen lg:hidden shadow-lg shadow-purple-900/30"
-          >
-            {sidebarContent}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Desktop sidebar - nixito style flutuante */}
+      <div className="hidden md:block">{verticalIconBar}</div>
     </>
   )
 }
