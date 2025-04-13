@@ -1,8 +1,10 @@
 "use client"
 
+import type React from "react"
+
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Download, ExternalLink, Trash2, MoreHorizontal, Star, Clock, Calendar, FileText } from 'lucide-react'
+import { Download, ExternalLink, Trash2, MoreHorizontal, Star, Clock, Calendar, FileText } from "lucide-react"
 import type Pdf from "@/lib/props/PdfProps"
 
 interface PDFListProps {
@@ -48,7 +50,7 @@ const PDFList: React.FC<PDFListProps> = ({ pdfs, onDelete, viewMode = "grid" }) 
                   }}
                   transition={{
                     duration: 8,
-                    repeat: Infinity,
+                    repeat: Number.POSITIVE_INFINITY,
                     ease: "easeInOut",
                   }}
                 >
@@ -108,19 +110,17 @@ const PDFList: React.FC<PDFListProps> = ({ pdfs, onDelete, viewMode = "grid" }) 
               </div>
 
               <div className="p-4">
-                <div className="w-full">
-                  <h3
-                    className="font-medium text-white truncate max-w-full group-hover:text-purple-400 transition-colors"
-                    title={pdf.name}
-                  >
-                    {pdf.name}
-                  </h3>
-                </div>
+                <h3
+                  className="font-medium text-white truncate w-full max-w-full group-hover:text-purple-400 transition-colors"
+                  title={pdf.name}
+                >
+                  {pdf.name}
+                </h3>
 
                 <div className="flex items-center justify-between mt-2">
                   <div className="flex items-center text-xs text-white/50">
                     <Calendar size={12} className="mr-1 flex-shrink-0" />
-                    <span className="truncate max-w-[100px]">{pdf.createdAt ? formatDate(pdf.createdAt) : "Recente"}</span>
+                    <span className="truncate">{pdf.createdAt ? formatDate(pdf.createdAt) : "Recente"}</span>
                   </div>
 
                   <div className="flex items-center gap-1 flex-shrink-0">
@@ -168,16 +168,16 @@ const PDFList: React.FC<PDFListProps> = ({ pdfs, onDelete, viewMode = "grid" }) 
                   }}
                   transition={{
                     duration: 5,
-                    repeat: Infinity,
+                    repeat: Number.POSITIVE_INFINITY,
                     ease: "easeInOut",
                   }}
                 >
                   <FileText size={20} className="text-purple-400" />
                 </motion.div>
               </div>
-              <div className="min-w-0 flex-1">
+              <div className="flex-1 min-w-0">
                 <h3
-                  className="font-medium text-white truncate group-hover:text-purple-400 transition-colors"
+                  className="font-medium text-white truncate max-w-full group-hover:text-purple-400 transition-colors"
                   title={pdf.name}
                 >
                   {pdf.name}

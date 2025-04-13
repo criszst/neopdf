@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import type { User } from "next-auth"
 import { motion, AnimatePresence } from "framer-motion"
-import { Plus, Filter, Grid, List, ChevronDown, FileText, BarChart2, Clock, Settings, Search } from 'lucide-react'
+import { Plus, Filter, Grid, List, ChevronDown, FileText, Clock, Settings, Search } from "lucide-react"
 
 import SideBar from "@/components/dashboard/sidebar"
 import Header from "@/components/dashboard/header"
@@ -36,7 +36,6 @@ export default function Dashboard() {
     message: "",
   })
   const [activeItem, setActiveItem] = useState("dashboard")
-  const [showMobileSearch, setShowMobileSearch] = useState(false)
 
   const containerRef = useRef(null)
   const router = useRouter()
@@ -205,10 +204,10 @@ export default function Dashboard() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col w-full relative z-10">
         {/* Header */}
-        <Header 
-          user={user} 
-          sidebarOpen={sidebarOpen} 
-          setSidebarOpen={setSidebarOpen} 
+        <Header
+          user={user}
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
           onUpload={handleUploadClick}
           pdfs={pdfs}
         />
@@ -260,7 +259,18 @@ export default function Dashboard() {
                   <ChevronDown size={14} />
                 </motion.button>
 
-          
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.4, duration: 0.3 }}
+                  onClick={handleUploadClick}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm font-medium shadow-lg shadow-purple-500/20"
+                >
+                  <Plus size={16} />
+                  <span className="hidden sm:inline">Novo PDF</span>
+                </motion.button>
               </div>
             </motion.div>
 
@@ -357,9 +367,16 @@ export default function Dashboard() {
               key={item}
               onClick={() => {
                 if (item === "search") {
-                  setShowMobileSearch(true)
+                  // Trigger the search functionality in the header
+                  const searchButton = document.querySelector('[aria-label="Pesquisar"]') as HTMLButtonElement
+                  if (searchButton) searchButton.click()
                 } else {
                   setActiveItem(item)
+                  // Handle navigation for other items
+                  if (item === "dashboard") router.push("/dashboard")
+                  if (item === "files") router.push("/dashboard/files")
+                  if (item === "activity") router.push("/dashboard/activity")
+                  if (item === "settings") router.push("/dashboard/settings")
                 }
               }}
               className={`relative p-2 ${activeItem === item ? "text-purple-400" : "text-white/70"}`}
