@@ -273,7 +273,7 @@ const Header: React.FC<HeaderProps> = ({ user, sidebarOpen, setSidebarOpen, onUp
                     ) : (
                       <div className="px-3 py-4 text-center text-white/50">
                         <FileText size={24} className="mx-auto mb-2 text-purple-400/50" />
-                        <p>Nenhum PDF encontrado com "{searchQuery}"</p>
+                        <p>Nenhum PDF encontrado com {searchQuery}</p>
                       </div>
                     )}
                   </div>
