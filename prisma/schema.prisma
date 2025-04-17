@@ -11,9 +11,9 @@ datasource db {
 }
 
 model User {
-  id            String     @id @default(cuid())
+  id            String       @id @default(cuid())
   name          String?
-  email         String?    @unique
+  email         String?      @unique
   emailVerified DateTime?
   password      String?
   image         String?
@@ -21,12 +21,32 @@ model User {
   sessions      Session[]
   pdfs          PDF[]
   activities    Activity[]
-  storageUsed   Int        @default(0) // Em bytes
-  storageLimit  Int        @default(52428800) // 50MB em bytes
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @default(now())
+  settings      UserSettings?
+  storageUsed   Int          @default(0) // Em bytes
+  storageLimit  Int          @default(52428800) // 50MB em bytes
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @default(now())
 
   @@map("users")
+}
+
+model UserSettings {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  image              String?
+  darkMode           Boolean  @default(true)
+  language           String   @default("pt-BR")
+  emailNotifications Boolean  @default(true)
+  pushNotifications  Boolean  @default(true)
+  twoFactorAuth      Boolean  @default(false)
+  autoDeleteItems    Boolean  @default(false)
+  phone              String?
+  address            String?
+  birthdate          String?
+  secondaryEmails    String[] @default([])
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 }
 
 model Account {
@@ -112,4 +132,3 @@ model VerificationToken {
 
   @@unique([identifier, token])
 }
-

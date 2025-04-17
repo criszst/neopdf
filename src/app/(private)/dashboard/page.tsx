@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import type { User } from "next-auth"
 import { motion, AnimatePresence } from "framer-motion"
-import { Plus, Filter, Grid, List, ChevronDown, FileText, Clock, Settings, Search } from "lucide-react"
+import { Plus, Filter, Grid, List, ChevronDown, FileText, Clock, Settings, Search, BarChart2 } from "lucide-react"
 
 import SideBar from "@/components/dashboard/sidebar"
 import Header from "@/components/dashboard/header"
@@ -224,7 +224,7 @@ export default function Dashboard() {
               className="flex flex-col sm:flex-row sm:items-center justify-between mb-6"
             >
               <div className="flex items-center gap-2 mb-4 sm:mb-0">
-                <h1 className="text-2xl font-bold text-white">Meus PDFs</h1>
+                <h1 className="text-2xl font-bold text-white">Dashboard</h1>
               </div>
 
               <div className="flex items-center gap-3">
@@ -359,22 +359,23 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Mobile Bottom Navigation - only visible on small screens */}
+      {/* Mobile Bottom Navigation */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-[#151525] border-t border-purple-900/20 z-40">
         <div className="flex justify-around py-3">
-          {["dashboard", "files", "search", "activity", "settings"].map((item, index) => (
+          {["dashboard", "files", "analytics", "activity", "settings"].map((item, index) => (
             <button
               key={item}
               onClick={() => {
                 if (item === "search") {
-                  // Trigger the search functionality in the header
                   const searchButton = document.querySelector('[aria-label="Pesquisar"]') as HTMLButtonElement
                   if (searchButton) searchButton.click()
+
                 } else {
                   setActiveItem(item)
-                  // Handle navigation for other items
+                  
                   if (item === "dashboard") router.push("/dashboard")
                   if (item === "files") router.push("/dashboard/files")
+                  if (item === 'analytics') router.push('/dashboard/analytics')
                   if (item === "activity") router.push("/dashboard/activity")
                   if (item === "settings") router.push("/dashboard/settings")
                 }
@@ -383,7 +384,8 @@ export default function Dashboard() {
             >
               {item === "dashboard" && <Grid size={22} />}
               {item === "files" && <FileText size={22} />}
-              {item === "search" && <Search size={22} />}
+              {/* {item === "search" && <Search size={22} />} */}
+              {item === "analytics" && <BarChart2 size={22} />}
               {item === "activity" && <Clock size={22} />}
               {item === "settings" && <Settings size={22} />}
             </button>

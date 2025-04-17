@@ -5,9 +5,11 @@ import Image from "next/image"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import type { User } from "next-auth"
-import { Bell, Search, ChevronDown, Settings, LogOut, HelpCircle, X, Plus, FileText, Clock, History } from 'lucide-react'
+import { Bell, Search, ChevronDown, Settings, LogOut, HelpCircle, X, Plus, FileText, Clock, History, Router } from 'lucide-react'
 import Notification from "@/components/ui/notification"
 import type Pdf from "@/lib/props/PdfProps"
+import { ro } from "date-fns/locale"
+import { useRouter } from "next/navigation"
 
 interface HeaderProps {
   user: User | null
@@ -31,6 +33,8 @@ const Header: React.FC<HeaderProps> = ({ user, sidebarOpen, setSidebarOpen, onUp
   const searchRef = useRef<HTMLDivElement>(null)
   const userMenuRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  const router = useRouter()
 
   // Handle search functionality
   useEffect(() => {
@@ -163,7 +167,7 @@ const Header: React.FC<HeaderProps> = ({ user, sidebarOpen, setSidebarOpen, onUp
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.1 }}
-              className="relative flex items-center rounded-lg bg-[#151525] border border-purple-500/20 overflow-hidden group"
+              className="relative flex items-center rounded-full bg-[#151525] border border-purple-400/10 overflow-hidden group"
             >
               <Search size={16} className="absolute left-3 text-purple-400/70" />
               <input
@@ -386,7 +390,8 @@ const Header: React.FC<HeaderProps> = ({ user, sidebarOpen, setSidebarOpen, onUp
                     <p className="font-medium text-white">{user?.name}</p>
                     <p className="text-xs text-purple-300/70 truncate">{user?.email}</p>
                   </div>
-                  <div className="py-1">
+                  <div className="py-1 flex w-full flex-col gap-3 px-4 text-sm text-white/70 hover:text-white transition-colors">
+                    <Link href="/dashboard/settings" >
                     <motion.button
                       whileHover={{ x: 5, backgroundColor: "rgba(139, 92, 246, 0.1)" }}
                       className="flex w-full items-center gap-2 px-4 py-2 text-sm text-white/70 hover:text-white transition-colors"
@@ -394,6 +399,7 @@ const Header: React.FC<HeaderProps> = ({ user, sidebarOpen, setSidebarOpen, onUp
                       <Settings size={16} />
                       <span>Configurações</span>
                     </motion.button>
+                    </Link>
                     <motion.button
                       whileHover={{ x: 5, backgroundColor: "rgba(139, 92, 246, 0.1)" }}
                       className="flex w-full items-center gap-2 px-4 py-2 text-sm text-white/70 hover:text-white transition-colors"
@@ -426,7 +432,8 @@ const Header: React.FC<HeaderProps> = ({ user, sidebarOpen, setSidebarOpen, onUp
         action={{
           label: "Ver detalhes",
           onClick: () => {
-            setShowNotification(false)
+            toggleNotification()
+            router.push("/dashboard/settings")
           },
         }}
       />
