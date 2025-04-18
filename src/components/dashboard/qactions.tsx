@@ -94,6 +94,7 @@ const QuickActions: React.FC<QuickActionsProps> = ({ onUpload }) => {
 
         <div className="space-y-4">
 
+
           {/* Quick action buttons */}
           <div className="grid grid-cols-2 gap-3">
             {actions.map((action, index) => (
@@ -113,7 +114,8 @@ const QuickActions: React.FC<QuickActionsProps> = ({ onUpload }) => {
             ))}
           </div>
 
-          {/* Recent files section */}
+
+
           <div className="mt-4">
             <h3 className="text-sm font-medium text-white/70 mb-3">Arquivos recentes</h3>
             <div className="space-y-2">
