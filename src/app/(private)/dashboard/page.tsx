@@ -259,18 +259,7 @@ export default function Dashboard() {
                   <ChevronDown size={14} />
                 </motion.button>
 
-                <motion.button
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.4, duration: 0.3 }}
-                  onClick={handleUploadClick}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm font-medium shadow-lg shadow-purple-500/20"
-                >
-                  <Plus size={16} />
-                  <span className="hidden sm:inline">Novo PDF</span>
-                </motion.button>
+
               </div>
             </motion.div>
 

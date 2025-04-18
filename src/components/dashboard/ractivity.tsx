@@ -5,18 +5,9 @@ import { FileText, MoreHorizontal, Download, Eye, Trash2, Star, Share, ArrowRigh
 import { motion } from "framer-motion"
 import { formatDistanceToNow } from "date-fns"
 import { ptBR } from "date-fns/locale"
+import Activity from "@/lib/interfaces/UserActivity"
 
-interface Activity {
-  id: string
-  type: "UPLOAD" | "VIEW" | "DOWNLOAD" | "DELETE" | "STAR" | "UNSTAR" | "SHARE"
-  details?: string
-  createdAt: string
-  pdf?: {
-    id: string
-    name: string
-    fileType: string
-  }
-}
+
 
 const RecentActivity = () => {
   const [activities, setActivities] = useState<Activity[]>([])

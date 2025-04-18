@@ -142,9 +142,8 @@ export default function SettingsPage() {
   }, [loading, user, router])
 
   // Substitua a função handleSaveChanges para salvar as configurações no banco de dados
-  const handleSaveChanges = async (e?: React.MouseEvent | React.FormEvent) => {
-    // TODO: prevent the page reload when user save the data
-  
+  const handleSaveChanges = async (e?: React.MouseEvent) => {
+    // Prevenir o comportamento padrão
     if (e) {
       e.preventDefault()
     }
@@ -163,6 +162,8 @@ export default function SettingsPage() {
         birthdate: profileData.birthdate,
         secondaryEmails: profileData.secondaryEmails.filter((email) => email.trim() !== ""),
         name: profileData.name,
+        // Incluir a imagem nos dados a serem salvos
+        image: profileData.profileImage,
       }
 
       // Mostrar toast de carregamento
@@ -238,29 +239,24 @@ export default function SettingsPage() {
     }
   }
 
+  // Modificar a função handleFileChange para processar corretamente a imagem
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-
-
     const file = e.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          setProfileData((prev) => ({
-            ...prev,
-            profileImage: event.target?.result as string,
-          }))
+    if (!file) return
 
-          setToast({
-            show: true,
-            type: "success",
-            title: "Imagem atualizada",
-            message: "Sua foto de perfil foi atualizada com sucesso.",
-          })
-        }
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      if (event.target?.result) {
+        const imageDataUrl = event.target.result as string
+        setProfileData((prev) => ({
+          ...prev,
+          profileImage: imageDataUrl,
+        }))
+
+        // Não mostrar o toast aqui, apenas quando salvar as configurações
       }
-      reader.readAsDataURL(file)
     }
+    reader.readAsDataURL(file)
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {

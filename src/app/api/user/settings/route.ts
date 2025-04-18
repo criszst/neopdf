@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server"
+import { type NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/app/api/auth/auth"
 import { PrismaClient } from "@prisma/client"
@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      include: { settings: true }
+      include: { settings: true },
     })
 
     if (!user) {
@@ -28,13 +28,14 @@ export async function GET(req: NextRequest) {
       const defaultSettings = await prisma.userSettings.create({
         data: {
           userId: user.id,
+          image: user.image, // Incluir a imagem do usuário
           darkMode: true,
           language: "pt-BR",
           emailNotifications: true,
           pushNotifications: true,
           twoFactorAuth: false,
           autoDeleteItems: false,
-        }
+        },
       })
 
       return NextResponse.json(defaultSettings)
@@ -79,9 +80,12 @@ export async function POST(req: NextRequest) {
         where: { userId: user.id },
         data: {
           darkMode: data.darkMode !== undefined ? data.darkMode : existingSettings.darkMode,
+          image: data.image !== undefined ? data.image : existingSettings.image,
           language: data.language || existingSettings.language,
-          emailNotifications: data.emailNotifications !== undefined ? data.emailNotifications : existingSettings.emailNotifications,
-          pushNotifications: data.pushNotifications !== undefined ? data.pushNotifications : existingSettings.pushNotifications,
+          emailNotifications:
+            data.emailNotifications !== undefined ? data.emailNotifications : existingSettings.emailNotifications,
+          pushNotifications:
+            data.pushNotifications !== undefined ? data.pushNotifications : existingSettings.pushNotifications,
           twoFactorAuth: data.twoFactorAuth !== undefined ? data.twoFactorAuth : existingSettings.twoFactorAuth,
           autoDeleteItems: data.autoDeleteItems !== undefined ? data.autoDeleteItems : existingSettings.autoDeleteItems,
           phone: data.phone !== undefined ? data.phone : existingSettings.phone,
@@ -95,6 +99,7 @@ export async function POST(req: NextRequest) {
       settings = await prisma.userSettings.create({
         data: {
           userId: user.id,
+          image: data.image,
           darkMode: data.darkMode !== undefined ? data.darkMode : true,
           language: data.language || "pt-BR",
           emailNotifications: data.emailNotifications !== undefined ? data.emailNotifications : true,
@@ -109,8 +114,16 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    // Atualizar o nome do usuário se fornecido
-    if (data.name) {
+    // Atualizar também a imagem do usuário na tabela User
+    if (data.image) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          image: data.image,
+          name: data.name || user.name, // Atualizar o nome se fornecido
+        },
+      })
+    } else if (data.name) {
       await prisma.user.update({
         where: { id: user.id },
         data: { name: data.name },

@@ -6,6 +6,7 @@ import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Download, ExternalLink, Trash2, MoreHorizontal, Star, Clock, Calendar, FileText } from "lucide-react"
 import type Pdf from "@/lib/props/PdfProps"
+import Image from "next/image"
 
 interface PDFListProps {
   pdfs: Pdf[]
@@ -54,6 +55,7 @@ const PDFList: React.FC<PDFListProps> = ({ pdfs, onDelete, viewMode = "grid" }) 
                     ease: "easeInOut",
                   }}
                 >
+                  {/* <Image src={pdf.} alt={pdf.name} width={500} height={500} /> */}
                   <FileText size={48} className="text-purple-500/30" />
                 </motion.div>
 

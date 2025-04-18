@@ -16,6 +16,7 @@ export interface UserSettings {
   birthdate?: string | null
   secondaryEmails?: string[]
   name?: string
+  image?: string
 }
 
 export function useSettings() {
@@ -58,7 +59,6 @@ export function useSettings() {
         body: JSON.stringify(newSettings),
         // Adicionar estas opções para evitar comportamentos padrão
         cache: "no-store",
-        next: { revalidate: 0 }
       })
 
       if (!res.ok) {
@@ -66,8 +66,7 @@ export function useSettings() {
       }
 
       const data = await res.json()
-      
-      // Atualizar o estado local com as novas configurações
+
       setSettings((prev) => {
         if (!prev) return data.settings;
         return { ...prev, ...newSettings };
