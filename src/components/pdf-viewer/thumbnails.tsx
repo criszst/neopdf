@@ -59,8 +59,8 @@ export default function Thumbnails({ pdfUrl, currentPage, numPages, onPageClick 
   }
 
   return (
-    <div className="h-full w-full overflow-y-auto bg-[#151823]/90 p-2">
-      <h3 className="mb-3 px-2 text-xs font-medium text-purple-400">Páginas</h3>
+    <div className="h-full w-full overflow-y-auto bg-white p-2">
+      <h3 className="mb-3 px-2 text-xs font-medium text-purple-600">Páginas</h3>
 
       {loading && (
         <div className="flex h-20 items-center justify-center">
@@ -86,8 +86,8 @@ export default function Thumbnails({ pdfUrl, currentPage, numPages, onPageClick 
               key={`thumbnail-${index + 1}`}
               className={`${isMobile ? "flex-shrink-0" : "block"} cursor-pointer overflow-hidden rounded-md transition-all ${
                 currentPage === index + 1
-                  ? "ring-2 ring-purple-500 ring-offset-2 ring-offset-[#151823]"
-                  : "hover:ring-1 hover:ring-purple-400 hover:ring-offset-1 hover:ring-offset-[#151823]"
+                  ? "ring-2 ring-purple-500 ring-offset-2 ring-offset-white"
+                  : "hover:ring-1 hover:ring-purple-400 hover:ring-offset-1 hover:ring-offset-white"
               }`}
               onClick={() => onPageClick(index + 1)}
               variants={thumbnailVariants}
@@ -104,7 +104,7 @@ export default function Thumbnails({ pdfUrl, currentPage, numPages, onPageClick 
                 className="thumbnail-page"
                 loading={
                   <div
-                    className={`flex items-center justify-center bg-[#0e0525] ${
+                    className={`flex items-center justify-center bg-gray-100 ${
                       isMobile ? "h-[100px] w-[80px]" : "h-[150px] w-[100px]"
                     }`}
                   >
@@ -123,7 +123,7 @@ export default function Thumbnails({ pdfUrl, currentPage, numPages, onPageClick 
                   </div>
                 }
               />
-              <div className="bg-[#0e0525] py-1 text-center text-xs text-purple-300">{index + 1}</div>
+              <div className="bg-purple-100 py-1 text-center text-xs text-purple-700">{index + 1}</div>
             </motion.div>
           ))}
         </Document>
@@ -142,4 +142,3 @@ export default function Thumbnails({ pdfUrl, currentPage, numPages, onPageClick 
     </div>
   )
 }
-

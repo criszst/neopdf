@@ -184,7 +184,7 @@ export default function FilesPage() {
     setIsDeleting(true)
 
     try {
-      const res = await fetch(`/api/pdfs/${selectedPdf}`, {
+      const res = await fetch(`/api/pdf/${selectedPdf}`, {
         method: "DELETE",
       })
 

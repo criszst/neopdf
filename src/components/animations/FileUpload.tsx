@@ -42,9 +42,9 @@ export default function FileUpload({ onUploadComplete, className = "", showLabel
     }
 
     // Validate file size (max 10MB)
-    if (file.size > 20 * 1024 * 1024) {
+    if (file.size > 10 * 1024 * 1024) {
       setUploadStatus("error")
-      setErrorMessage("O arquivo não pode ser maior que 20MB")
+      setErrorMessage("O arquivo não pode ser maior que 10MB")
       return
     }
 

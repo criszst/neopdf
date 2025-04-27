@@ -14,7 +14,7 @@ export default function PDFLoading() {
       >
         <div className="relative mb-6">
           <div className="h-24 w-20 rounded-lg bg-gray-100 flex items-center justify-center dark:bg-gray-700">
-            <FileText className="h-12 w-12 text-gray-400 dark:text-gray-500" />
+            <FileText className="h-12 w-12 text-purple-400 dark:text-purple-500" />
           </div>
           <div className="absolute -right-3 -top-3 h-8 w-8 rounded-full bg-purple-600 p-1.5 shadow-lg">
             <Loader2 className="h-5 w-5 animate-spin text-white" />
@@ -44,4 +44,3 @@ export default function PDFLoading() {
     </div>
   )
 }
-

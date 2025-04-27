@@ -114,13 +114,12 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    // Atualizar também a imagem do usuário na tabela User
     if (data.image) {
       await prisma.user.update({
         where: { id: user.id },
         data: {
           image: data.image,
-          name: data.name || user.name, // Atualizar o nome se fornecido
+          name: data.name || user.name,
         },
       })
     } else if (data.name) {

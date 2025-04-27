@@ -1,24 +1,54 @@
 "use client"
 
 import type React from "react"
+
 import { useEffect, useState, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
 import type { User } from "next-auth"
-import { Document, Page, pdfjs } from "react-pdf"
 import { AnimatePresence, motion } from "framer-motion"
-import { Loader2, FileText, List } from "lucide-react"
-import PageLoading from "@/components/ui/page-loading"
-import PDFLoading from "@/components/pdf-viewer/pdfLoading"
-
-import Sidebar from "@/components/pdf-viewer/sidebar"
-import Controls from "@/components/pdf-viewer/controls"
-import ToastComponent from "@/components/ui/toast"
-import Thumbnails from "@/components/pdf-viewer/thumbnails"
-
+import {
+  FileText,
+  ChevronLeft,
+  ChevronRight,
+  Maximize,
+  Printer,
+  ChevronDown,
+  Download,
+  Star,
+  Share2,
+  ArrowLeft,
+  Grid,
+  Menu,
+  SearchIcon,
+} from "lucide-react"
 import { useMediaQuery } from "@/hooks/use-media-query"
+import ToastComponent from "@/components/ui/toast"
+import PDFLoading from "@/components/pdf-viewer/pdfLoading"
+import PdfGalleryModal from "@/components/pdf-viewer/pdfGallery"
 
-// Set up the worker for react-pdf
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`
+// Import react-pdf-viewer
+import { Viewer, Worker, type SpecialZoomLevel } from "@react-pdf-viewer/core"
+import { defaultLayoutPlugin } from "@react-pdf-viewer/default-layout"
+import { pageNavigationPlugin } from "@react-pdf-viewer/page-navigation"
+import { zoomPlugin } from "@react-pdf-viewer/zoom"
+import { searchPlugin } from "@react-pdf-viewer/search"
+import { fullScreenPlugin } from "@react-pdf-viewer/full-screen"
+import { printPlugin } from "@react-pdf-viewer/print"
+
+// Import styles
+import "@react-pdf-viewer/core/lib/styles/index.css"
+import "@react-pdf-viewer/default-layout/lib/styles/index.css"
+import "@react-pdf-viewer/page-navigation/lib/styles/index.css"
+import "@react-pdf-viewer/zoom/lib/styles/index.css"
+import "@react-pdf-viewer/search/lib/styles/index.css"
+import "@react-pdf-viewer/full-screen/lib/styles/index.css"
+import "@react-pdf-viewer/print/lib/styles/index.css"
+
+import { ToolbarPluginProps, ToolbarSlot, type SidebarTab } from "@react-pdf-viewer/default-layout"
+
+// Import theme
+import { theme } from "@/lib/colors/theme-config"
+import type Pdf from "@/lib/props/PdfProps"
 
 interface PDF {
   id: string
@@ -33,16 +63,15 @@ export default function PDFViewer() {
   const id = params.id as string
   const [pdf, setPdf] = useState<PDF | null>(null)
   const [numPages, setNumPages] = useState<number | null>(null)
-  const [pageNumber, setPageNumber] = useState(1)
-  const [scale, setScale] = useState(1.0)
-  const [rotation, setRotation] = useState(0)
+  const [currentPage, setCurrentPage] = useState(1)
   const [loading, setLoading] = useState(true)
-  const [documentLoading, setDocumentLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [bgColor, setBgColor] = useState("#0e0525") // Dark background matching dashboard
   const [user, setUser] = useState<User | null>(null)
   const [isStarred, setIsStarred] = useState(false)
-  const [showThumbnails, setShowThumbnails] = useState(false)
+  const [zoomLevel, setZoomLevel] = useState<number | SpecialZoomLevel>(100)
+  const [showHeader, setShowHeader] = useState(true)
+  const [lastScrollTop, setLastScrollTop] = useState(0)
+  const [showGallery, setShowGallery] = useState(false)
   const [toast, setToast] = useState<{
     show: boolean
     type: "success" | "error" | "info"
@@ -57,11 +86,28 @@ export default function PDFViewer() {
 
   const isMobile = useMediaQuery("(max-width: 768px)")
   const containerRef = useRef<HTMLDivElement>(null)
-
-  // Track the actual display scale separately from the user-controlled scale
-  const [displayScale, setDisplayScale] = useState(1.0)
-
   const router = useRouter()
+
+  // Initialize plugins
+  const pageNavigationPluginInstance = pageNavigationPlugin()
+  const zoomPluginInstance = zoomPlugin()
+  const searchPluginInstance = searchPlugin()
+  const fullScreenPluginInstance = fullScreenPlugin()
+  const printPluginInstance = printPlugin()
+
+  // Get plugin functions
+  const { jumpToPage } = pageNavigationPluginInstance
+  const { Zoom } = zoomPluginInstance
+  const { zoomTo } = zoomPluginInstance
+
+  const { EnterFullScreen } = fullScreenPluginInstance
+  const { Print } = printPluginInstance
+
+  // Create default layout plugin
+  const defaultLayoutPluginInstance = defaultLayoutPlugin({
+    sidebarTabs: () => [],
+    renderToolbar: (ToolbarPluginProps) => ToolbarPluginProps[0],
+  })
 
   useEffect(() => {
     async function fetchSession() {
@@ -89,7 +135,7 @@ export default function PDFViewer() {
         setLoading(true)
         setError(null)
 
-        const res = await fetch(`/api/pdfs/${id}`)
+        const res = await fetch(`/api/pdf/${id}`)
 
         if (!res.ok) {
           if (res.status === 404) {
@@ -129,61 +175,69 @@ export default function PDFViewer() {
     }
   }, [id])
 
-  // Update display scale whenever scale or container size changes
+  // Handle scroll to hide/show header on mobile
   useEffect(() => {
-    calculateResponsiveScale()
-  }, [scale, isMobile])
+    if (!isMobile || !containerRef.current) return
 
-  function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
-    setNumPages(numPages)
-    setDocumentLoading(false)
-    // Calculate initial responsive scale after document loads
-    calculateResponsiveScale()
-  }
+    const handleScroll = () => {
+      const scrollTop = containerRef.current?.scrollTop || 0
+      if (scrollTop > lastScrollTop && scrollTop > 50) {
+        setShowHeader(false)
+      } else if (scrollTop < lastScrollTop || scrollTop < 10) {
+        setShowHeader(true)
+      }
+      setLastScrollTop(scrollTop)
+    }
 
-  function onDocumentLoadError(error: Error) {
-    console.error("Error loading PDF:", error)
-    setError("Não foi possível carregar o documento.")
-    setDocumentLoading(false)
-  }
-
-  const handlePreviousPage = () => {
-    setPageNumber((prev) => Math.max(prev - 1, 1))
-  }
-
-  const handleNextPage = () => {
-    setPageNumber((prev) => Math.min(prev + 1, numPages || 1))
-  }
+    const container = containerRef.current
+    container.addEventListener("scroll", handleScroll)
+    return () => {
+      container.removeEventListener("scroll", handleScroll)
+    }
+  }, [isMobile, lastScrollTop])
 
   const handlePageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const page = Number.parseInt(e.target.value)
-    if (!isNaN(page) && page >= 1 && page <= (numPages || 1)) {
-      setPageNumber(page)
+    const page = Number.parseInt(e.target.value, 10)
+    if (!isNaN(page) && page > 0 && page <= (numPages || 1)) {
+      setCurrentPage(page)
+      jumpToPage(page - 1)
     }
   }
 
-  const handlePageClick = (page: number) => {
-    if (page >= 1 && page <= (numPages || 1)) {
-      setPageNumber(page)
+  const handleNextPage = () => {
+    if (currentPage < (numPages || 1)) {
+      setCurrentPage(currentPage + 1)
+      jumpToPage(currentPage)
+    }
+  }
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1)
+      jumpToPage(currentPage - 2)
     }
   }
 
   const handleZoomIn = () => {
-    setScale((prev) => {
-      const newScale = Math.min(prev + 0.2, 3)
-      return newScale
-    })
+    if (typeof zoomLevel === "number") {
+      const newZoom = Math.min(zoomLevel + 25, 300)
+      setZoomLevel(newZoom)
+      zoomTo(newZoom / 100)
+    } else {
+      setZoomLevel(125)
+      zoomTo(1.25)
+    }
   }
 
   const handleZoomOut = () => {
-    setScale((prev) => {
-      const newScale = Math.max(prev - 0.2, 0.5)
-      return newScale
-    })
-  }
-
-  const handleRotate = () => {
-    setRotation((prev) => (prev + 90) % 360)
+    if (typeof zoomLevel === "number") {
+      const newZoom = Math.max(zoomLevel - 25, 50)
+      setZoomLevel(newZoom)
+      zoomTo(newZoom / 100)
+    } else {
+      setZoomLevel(75)
+      zoomTo(0.75)
+    }
   }
 
   const handleDownload = async () => {
@@ -233,7 +287,7 @@ export default function PDFViewer() {
       })
 
       // Atualizar no banco de dados
-      await fetch(`/api/pdfs/${id}/star`, {
+      await fetch(`/api/pdf/${id}/star`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -308,57 +362,59 @@ export default function PDFViewer() {
     }
   }
 
-  // Function to change background color
-  const changeBackground = (color: string) => {
-    setBgColor(color)
+  const handleOpenGallery = () => {
+    setShowGallery(true)
+  }
+
+  const handleSelectPdf = (selectedPdf: Pdf) => {
+    router.push(`/pdf/${selectedPdf.id}`)
   }
 
   const handlePrint = () => {
-    if (pdf?.s3Url) {
-      const printWindow = window.open(pdf.s3Url, "_blank")
-      if (printWindow) {
-        printWindow.addEventListener("load", () => {
-          printWindow.print()
-        })
-      }
+    const printButton = document.querySelector(".rpv-print__popover-toggle-button") as HTMLButtonElement
+    if (printButton) {
+      printButton.click()
     }
   }
 
-  // Update the toggleThumbnails function to handle mobile differently
-  const toggleThumbnails = () => {
-    setShowThumbnails(!showThumbnails)
+  const handleFullScreen = () => {
+    const fullScreenButton = document.querySelector(".rpv-full-screen__popover-toggle-button") as HTMLButtonElement
+    if (fullScreenButton) {
+      fullScreenButton.click()
+    }
   }
 
-  // Calculate appropriate scale based on container width
-  const calculateResponsiveScale = () => {
-    if (!containerRef.current) {
-      setDisplayScale(scale)
-      return
+  const handleSearch = () => {
+    const searchButton = document.querySelector(".rpv-search__popover-toggle-button") as HTMLButtonElement
+    if (searchButton) {
+      searchButton.click()
     }
-
-    const containerWidth = containerRef.current.clientWidth || 0
-    let newScale = scale
-
-    if (isMobile) {
-      if (containerWidth < 480) newScale = Math.min(scale, 0.6)
-      else if (containerWidth < 768) newScale = Math.min(scale, 0.8)
-    }
-
-    setDisplayScale(newScale)
   }
 
   if (loading) {
-    return <PageLoading />
+    return (
+      <div
+        className="flex h-screen items-center justify-center"
+        style={{ background: theme.colors.background.primary }}
+      >
+        <PDFLoading />
+      </div>
+    )
   }
 
   if (error) {
     return (
-      <div className="flex h-screen flex-col items-center justify-center bg-gradient-to-br from-[#0e0525] to-[#1a0f24] text-white">
+      <div
+        className="flex h-screen flex-col items-center justify-center text-white"
+        style={{
+          background: `linear-gradient(to bottom right, ${theme.colors.background.primary}, ${theme.colors.background.secondary})`,
+        }}
+      >
         <motion.div
-          className="mb-6 rounded-full bg-red-500/20 p-4"
+          className="mb-6 rounded-full p-4"
+          style={{ background: `rgba(139, 92, 246, 0.2)` }}
           animate={{
             scale: [1, 1.05, 1],
-            boxShadow: ["0 0 0 rgba(239, 68, 68, 0)", "0 0 20px rgba(239, 68, 68, 0.3)", "0 0 0 rgba(239, 68, 68, 0)"],
           }}
           transition={{
             duration: 2,
@@ -366,14 +422,19 @@ export default function PDFViewer() {
             ease: "easeInOut",
           }}
         >
-          <Loader2 size={32} className="animate-spin text-red-400" />
+          <FileText size={32} style={{ color: theme.colors.purple.light }} />
         </motion.div>
-        <h2 className="mb-2 text-xl font-bold text-white">Erro ao carregar o PDF</h2>
-        <div className="mb-6 text-center text-red-400">{error}</div>
+        <h2 className="mb-2 text-xl font-bold" style={{ color: theme.colors.text.primary }}>
+          Erro ao carregar o PDF
+        </h2>
+        <div className="mb-6 text-center" style={{ color: theme.colors.purple.light }}>
+          {error}
+        </div>
         <motion.button
           onClick={handleBackToDashboard}
-          className="flex items-center gap-2 rounded-md bg-purple-600 px-4 py-2 text-white transition-colors hover:bg-purple-700"
-          whileHover={{ scale: 1.05 }}
+          className="flex items-center gap-2 rounded-md px-4 py-2 text-white transition-colors"
+          style={{ background: theme.colors.purple.primary }}
+          whileHover={{ scale: 1.05, background: theme.colors.purple.dark }}
           whileTap={{ scale: 0.95 }}
         >
           Voltar ao Dashboard
@@ -382,203 +443,299 @@ export default function PDFViewer() {
     )
   }
 
-  return (
-    <div className="flex h-screen flex-col bg-gradient-to-br from-[#0e0525] to-[#1a0f24] text-white overflow-hidden">
-      {/* Top toolbar for document title and main actions */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="flex items-center justify-between border-b border-purple-900/20 bg-[#151823]/90 backdrop-blur-md px-4 py-2"
-      >
-        <div className="flex items-center gap-2">
-          <FileText className="h-5 w-5 text-purple-500" />
-          <h1 className="truncate text-sm font-medium text-white md:text-base">{pdf?.name || "Documento"}</h1>
-        </div>
-        <div className="flex items-center gap-2">
-          <motion.button
-            onClick={toggleThumbnails}
-            className={`rounded-md p-1.5 ${
-              showThumbnails
-                ? "bg-purple-600/30 text-purple-400"
-                : "text-gray-400 hover:bg-purple-500/10 hover:text-purple-400"
-            }`}
-            aria-label="Mostrar miniaturas"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <List size={18} />
-          </motion.button>
-        </div>
-      </motion.div>
+  // Renderização do PDF Viewer
+  const renderPDFViewer = () => {
+    if (!pdf?.s3Url) return null
 
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
-        <Sidebar
-          user={user}
-          pdf={pdf}
-          numPages={numPages}
-          isStarred={isStarred}
-          onToggleStar={handleToggleStar}
-          onShare={handleShare}
-          onDownload={handleDownload}
-          onBackToDashboard={handleBackToDashboard}
-          onChangeBackground={changeBackground}
-          isMobile={isMobile}
-        />
-
-        {/* Main Content */}
-        <div className="flex flex-1 flex-col overflow-hidden">
-          {/* Thumbnails - Mobile (top) */}
-          <AnimatePresence>
-            {showThumbnails && isMobile && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 120, opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                className="w-full border-b border-purple-900/20 bg-[#151823]/90 backdrop-blur-md"
-                style={{ overflowY: "hidden" }}
-              >
-                <Thumbnails
-                  pdfUrl={pdf?.s3Url || ""}
-                  currentPage={pageNumber}
-                  numPages={numPages || 0}
-                  onPageClick={handlePageClick}
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <div className="flex flex-1 overflow-hidden">
-            {/* Thumbnails - Desktop (side) */}
-            <AnimatePresence>
-              {showThumbnails && !isMobile && (
-                <motion.div
-                  initial={{ width: 0, opacity: 0 }}
-                  animate={{ width: 180, opacity: 1 }}
-                  exit={{ width: 0, opacity: 0 }}
-                  transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                  className="h-full border-r border-purple-900/20 bg-[#151823]/90 backdrop-blur-md"
-                >
-                  <Thumbnails
-                    pdfUrl={pdf?.s3Url || ""}
-                    currentPage={pageNumber}
-                    numPages={numPages || 0}
-                    onPageClick={handlePageClick}
-                  />
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* PDF Viewer */}
-            <div
-              ref={containerRef}
-              className="relative flex flex-1 items-center justify-center overflow-auto transition-colors duration-300 text-white"
-              style={{ backgroundColor: bgColor }}
-            >
-              {documentLoading && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-                  <PDFLoading />
-                </div>
-              )}
-
-              {pdf && (
-                <motion.div
-                  className="pdf-container my-4 mx-auto"
-                  style={{ maxWidth: isMobile ? "100%" : "90%" }}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, ease: "easeOut" }}
-                >
-                  <Document
-                    file={pdf.s3Url}
-                    onLoadSuccess={onDocumentLoadSuccess}
-                    onLoadError={onDocumentLoadError}
-                    loading={null}
-                    className="pdf-document"
+    return (
+      <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
+        <div className="h-full">
+          <Viewer
+            fileUrl={pdf.s3Url}
+            plugins={[
+              defaultLayoutPluginInstance,
+              pageNavigationPluginInstance,
+              zoomPluginInstance,
+              searchPluginInstance,
+              fullScreenPluginInstance,
+              printPluginInstance,
+            ]}
+            onDocumentLoad={(e) => {
+              setNumPages(e.doc.numPages)
+            }}
+            onPageChange={(e) => {
+              setCurrentPage(e.currentPage + 1)
+            }}
+            defaultScale={typeof zoomLevel === "number" ? zoomLevel / 100 : zoomLevel}
+            renderLoader={(percentages) => (
+              <div className="flex h-full items-center justify-center">
+                <div className="text-center">
+                  <div className="mb-2 text-xl font-semibold" style={{ color: theme.colors.text.primary }}>
+                    Carregando PDF
+                  </div>
+                  <div
+                    className="h-2 w-64 overflow-hidden rounded-full"
+                    style={{ background: theme.colors.background.tertiary }}
                   >
-                    <Page
-                      pageNumber={pageNumber}
-                      scale={displayScale}
-                      rotate={rotation}
-                      renderTextLayer={false}
-                      renderAnnotationLayer={false}
-                      className="shadow-xl"
-                      width={isMobile && containerRef.current ? containerRef.current.clientWidth - 30 : undefined}
-                      loading={
-                        <div className="flex h-[600px] w-full max-w-[400px] items-center justify-center rounded-lg bg-[#151823]/90">
-                          <PDFLoading />
-                        </div>
-                      }
+                    <div
+                      className="h-full transition-all duration-300"
+                      style={{
+                        width: `${Math.round(percentages)}%`,
+                        background: `linear-gradient(to right, ${theme.colors.purple.gradient.from}, ${theme.colors.purple.gradient.to})`,
+                      }}
                     />
-                  </Document>
-                </motion.div>
-              )}
-
-              {/* Custom style for PDF via CSS-in-JS */}
-              <style jsx global>{`
-                .pdf-container {
-                  padding: 10px;
-                  border-radius: 12px;
-                  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
-                  transition: transform 0.3s ease;
-                  background: rgba(21, 24, 35, 0.7);
-                  backdrop-filter: blur(8px);
-                  border: 1px solid rgba(147, 51, 234, 0.2);
-                }
-                
-                .pdf-document {                                       
-                  display: flex;
-                  justify-content: center;
-                  align-items: center;
-                  height: 100%;
-                  width: 100%;
-                }
-                
-                .react-pdf__Page {
-                  margin: 0 auto;
-                  border-radius: 8px;
-                  overflow: hidden;
-                  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.3);
-                }
-                
-                .react-pdf__Page__canvas {
-                  border-radius: 8px;
-                  display: block !important;
-                  max-width: 100% !important;
-                  height: auto !important;
-                }
-                
-                @media (max-width: 640px) {
-                  .pdf-container {
-                    padding: 5px;
-                    margin: 5px;
-                  }
-                  
-                  .react-pdf__Page {
-                    width: 100% !important;
-                  }
-                }
-              `}</style>
-            </div>
-          </div>
-
-          {/* Controls */}
-          <Controls
-            pageNumber={pageNumber}
-            numPages={numPages}
-            scale={scale}
-            onPreviousPage={handlePreviousPage}
-            onNextPage={handleNextPage}
-            onPageChange={handlePageChange}
-            onZoomIn={handleZoomIn}
-            onZoomOut={handleZoomOut}
-            onRotate={handleRotate}
-            onPrint={handlePrint}
+                  </div>
+                  <div className="mt-1" style={{ color: theme.colors.text.secondary }}>
+                    {Math.round(percentages)}%
+                  </div>
+                </div>
+              </div>
+            )}
           />
         </div>
+      </Worker>
+    )
+  }
+
+  // Renderização da interface personalizada
+  return (
+    <div className="flex h-screen flex-col overflow-hidden" style={{ background: theme.colors.background.primary }}>
+      {/* Barra de ferramentas superior */}
+      <AnimatePresence>
+        {(!isMobile || showHeader) && (
+          <motion.div
+            initial={isMobile ? { y: -50, opacity: 0 } : undefined}
+            animate={isMobile ? { y: 0, opacity: 1 } : undefined}
+            exit={isMobile ? { y: -50, opacity: 0 } : undefined}
+            transition={{ duration: 0.3 }}
+            className="flex items-center justify-between border-b px-2 py-2 z-10"
+            style={{
+              borderColor: theme.colors.border.primary,
+              background: theme.colors.background.secondary,
+            }}
+          >
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={handleBackToDashboard}
+                className="rounded p-1.5 hover:bg-opacity-20 hover:bg-purple-900/20"
+                style={{ color: theme.colors.text.primary }}
+                title="Voltar ao Dashboard"
+              >
+                <ArrowLeft size={18} />
+              </button>
+
+              <button
+                onClick={handleOpenGallery}
+                className="rounded p-1.5 hover:bg-opacity-20 hover:bg-purple-900/20"
+                style={{ color: theme.colors.text.primary }}
+                title="Ver todos os PDFs"
+              >
+                <Grid size={18} />
+              </button>
+
+              <div className="flex items-center space-x-1 ml-2">
+                <button
+                  onClick={handlePrevPage}
+                  disabled={currentPage <= 1}
+                  className="rounded p-1.5 hover:bg-opacity-20 hover:bg-purple-900/20 disabled:opacity-50"
+                  style={{ color: theme.colors.text.primary }}
+                  title="Página anterior"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+
+                <div className="flex items-center">
+                  <input
+                    type="text"
+                    value={currentPage}
+                    onChange={handlePageChange}
+                    className="w-8 rounded border px-1 text-center text-sm"
+                    style={{
+                      borderColor: theme.colors.border.primary,
+                      background: theme.colors.background.tertiary,
+                      color: theme.colors.text.primary,
+                    }}
+                    aria-label="Número da página atual"
+                  />
+                  <span className="mx-1" style={{ color: theme.colors.text.secondary }}>
+                    /
+                  </span>
+                  <span style={{ color: theme.colors.text.secondary }}>{numPages || "-"}</span>
+                </div>
+
+                <button
+                  onClick={handleNextPage}
+                  disabled={currentPage >= (numPages || 1)}
+                  className="rounded p-1.5 hover:bg-opacity-20 hover:bg-purple-900/20 disabled:opacity-50"
+                  style={{ color: theme.colors.text.primary }}
+                  title="Próxima página"
+                >
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+            </div>
+
+            {!isMobile && (
+              <div className="flex items-center space-x-2">
+                <div className="flex items-center">
+                  <span className="text-sm" style={{ color: theme.colors.text.secondary }}>
+                    {typeof zoomLevel === "number" ? `${zoomLevel}%` : "Ajustado"}
+                  </span>
+                  <div className="flex">
+                    <button
+                      onClick={handleZoomOut}
+                      className="rounded p-1.5 hover:bg-opacity-20 hover:bg-purple-900/20"
+                      style={{ color: theme.colors.text.primary }}
+                      title="Diminuir zoom"
+                    >
+                      <ChevronDown size={18} />
+                    </button>
+                    <button
+                      onClick={handleZoomIn}
+                      className="rounded p-1.5 hover:bg-opacity-20 hover:bg-purple-900/20"
+                      style={{ color: theme.colors.text.primary }}
+                      title="Aumentar zoom"
+                    >
+                      <ChevronDown size={18} style={{ transform: "rotate(180deg)" }} />
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleSearch}
+                  className="rounded p-1.5 hover:bg-opacity-20 hover:bg-purple-900/20"
+                  style={{ color: theme.colors.text.primary }}
+                  title="Buscar no documento"
+                >
+                  <SearchIcon size={18} />
+                </button>
+              </div>
+            )}
+
+            <div className="flex items-center space-x-1">
+              <button
+                onClick={handleToggleStar}
+                className="rounded p-1.5 hover:bg-opacity-20 hover:bg-purple-900/20"
+                style={{ color: isStarred ? "#FCD34D" : theme.colors.text.primary }}
+                title={isStarred ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+              >
+                <Star size={18} fill={isStarred ? "#FCD34D" : "none"} />
+              </button>
+
+              <button
+                onClick={handleShare}
+                className="rounded p-1.5 hover:bg-opacity-20 hover:bg-purple-900/20"
+                style={{ color: theme.colors.text.primary }}
+                title="Compartilhar"
+              >
+                <Share2 size={18} />
+              </button>
+
+              <button
+                onClick={handleDownload}
+                className="rounded p-1.5 hover:bg-opacity-20 hover:bg-purple-900/20"
+                style={{ color: theme.colors.text.primary }}
+                title="Download"
+              >
+                <Download size={18} />
+              </button>
+
+              {!isMobile && (
+                <>
+                  <button
+                    onClick={handlePrint}
+                    className="rounded p-1.5 hover:bg-opacity-20 hover:bg-purple-900/20"
+                    style={{ color: theme.colors.text.primary }}
+                    title="Imprimir"
+                  >
+                    <Printer size={18} />
+                  </button>
+
+                  <button
+                    onClick={handleFullScreen}
+                    className="rounded p-1.5 hover:bg-opacity-20 hover:bg-purple-900/20"
+                    style={{ color: theme.colors.text.primary }}
+                    title="Tela cheia"
+                  >
+                    <Maximize size={18} />
+                  </button>
+                </>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Mobile Floating Button (quando o header está escondido) */}
+      {isMobile && !showHeader && (
+        <motion.button
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="fixed top-4 right-4 z-20 rounded-full p-3 shadow-lg"
+          style={{ background: theme.colors.purple.primary }}
+          onClick={() => setShowHeader(true)}
+        >
+          <Menu size={20} color="white" />
+        </motion.button>
+      )}
+
+      {/* Área do PDF */}
+      <div className="flex-1 overflow-auto" ref={containerRef}>
+        {renderPDFViewer()}
       </div>
+
+      {/* Mobile Floating Controls */}
+      {isMobile && (
+        <div
+          className="fixed bottom-4 left-1/2 transform -translate-x-1/2 flex items-center space-x-2 rounded-full px-4 py-2 shadow-lg z-20"
+          style={{ background: theme.colors.background.secondary, borderColor: theme.colors.border.primary }}
+        >
+          <button
+            onClick={handleZoomOut}
+            className="rounded-full p-2 hover:bg-opacity-20 hover:bg-purple-900/20"
+            style={{ color: theme.colors.text.primary }}
+          >
+            <ChevronDown size={18} />
+          </button>
+
+          <span className="text-sm" style={{ color: theme.colors.text.secondary }}>
+            {typeof zoomLevel === "number" ? `${zoomLevel}%` : "Ajustado"}
+          </span>
+
+          <button
+            onClick={handleZoomIn}
+            className="rounded-full p-2 hover:bg-opacity-20 hover:bg-purple-900/20"
+            style={{ color: theme.colors.text.primary }}
+          >
+            <ChevronDown size={18} style={{ transform: "rotate(180deg)" }} />
+          </button>
+        </div>
+      )}
+
+      {/* PDF Gallery Modal */}
+      <PdfGalleryModal
+        isOpen={showGallery}
+        onClose={() => setShowGallery(false)}
+        onSelectPdf={handleSelectPdf}
+        onToggleStar={async (pdfId) => {
+          try {
+            await fetch(`/api/pdf/${pdfId}/star`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                isStarred: true,
+              }),
+            })
+          } catch (error) {
+            console.error("Error toggling star:", error)
+          }
+        }}
+        onDownload={(pdfId) => {
+          window.open(`/api/pdf/${pdfId}`, "_blank")
+        }}
+      />
 
       {/* Toast Notifications */}
       <AnimatePresence>
@@ -591,7 +748,87 @@ export default function PDFViewer() {
           />
         )}
       </AnimatePresence>
+
+      <style jsx global>{`
+        /* Estilos personalizados para o PDF Viewer */
+        .rpv-core__viewer {
+          --rpv-color-primary: ${theme.colors.purple.primary} !important;
+          --rpv-color-primary-light: ${theme.colors.purple.light} !important;
+        }
+        
+        /* Esconder a barra de ferramentas padrão */
+        .rpv-core__inner-pages {
+          padding-top: 0 !important;
+        }
+        
+        .rpv-core__toolbar {
+          display: none !important;
+        }
+        
+        /* Estilizar o fundo e as páginas */
+        .rpv-core__viewer-container {
+          background-color: ${theme.colors.background.primary} !important;
+        }
+        
+        .rpv-core__page-layer {
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+          border-radius: 4px !important;
+          margin: 1rem auto !important;
+        }
+        
+        /* Estilizar a barra lateral */
+        .rpv-core__sidebar {
+          background-color: ${theme.colors.background.tertiary} !important;
+          border-color: ${theme.colors.border.primary} !important;
+        }
+        
+        .rpv-core__sidebar-tabs {
+          background-color: ${theme.colors.background.secondary} !important;
+        }
+        
+        .rpv-core__sidebar-tab {
+          color: ${theme.colors.text.secondary} !important;
+        }
+        
+        .rpv-core__sidebar-tab--selected {
+          background-color: ${theme.colors.purple.primary} !important;
+          color: white !important;
+        }
+        
+        /* Estilizar miniaturas */
+        .rpv-thumbnail__item {
+          background-color: ${theme.colors.background.tertiary} !important;
+          border-color: ${theme.colors.border.primary} !important;
+        }
+        
+        .rpv-thumbnail__item--selected {
+          border-color: ${theme.colors.purple.primary} !important;
+        }
+        
+        /* Estilizar a busca */
+        .rpv-search__popover {
+          background-color: ${theme.colors.background.tertiary} !important;
+          border-color: ${theme.colors.border.primary} !important;
+          color: ${theme.colors.text.primary} !important;
+        }
+        
+        .rpv-search__input {
+          background-color: ${theme.colors.background.secondary} !important;
+          border-color: ${theme.colors.border.primary} !important;
+          color: ${theme.colors.text.primary} !important;
+        }
+        
+        /* Ajustes responsivos */
+        @media (max-width: 768px) {
+          .rpv-core__page-layer {
+            margin: 0.5rem auto !important;
+          }
+          
+          .rpv-core__text-layer {
+            font-size: 0.9em !important;
+          }
+        }
+      `}</style>
     </div>
   )
 }
-
