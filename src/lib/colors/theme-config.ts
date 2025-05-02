@@ -9,7 +9,7 @@ export const theme = {
       card: "#1A1A2E", // Fundo de cards com transparência
     },
     purple: {
-      primary: "#8B5CF6", // Roxo principal mais vibrante
+      primary: "#0f0423", // Roxo principal mais vibrante
       light: "#A78BFA", // Roxo claro
       dark: "#7C3AED", // Roxo escuro
       gradient: {

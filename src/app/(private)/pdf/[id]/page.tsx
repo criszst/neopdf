@@ -6,27 +6,19 @@ import { useEffect, useState, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
 import type { User } from "next-auth"
 import { AnimatePresence, motion } from "framer-motion"
-import {
-  FileText,
-  ChevronLeft,
-  ChevronRight,
-  Maximize,
-  Printer,
-  ChevronDown,
-  Download,
-  Star,
-  Share2,
-  ArrowLeft,
-  Grid,
-  Menu,
-  SearchIcon,
-} from "lucide-react"
+import { FileText, Menu } from "lucide-react"
 import { useMediaQuery } from "@/hooks/use-media-query"
+
+// components
 import ToastComponent from "@/components/ui/toast"
 import PDFLoading from "@/components/pdf-viewer/pdfLoading"
 import PdfGalleryModal from "@/components/pdf-viewer/pdfGallery"
+import DesktopToolbar from "@/components/pdf-viewer/desktop/toolbar"
+import MobileToolbar from "@/components/pdf-viewer/mobile/toolbar"
+import MobileMenu from "@/components/pdf-viewer/mobile/menu"
+import SidebarToggle from "@/components/pdf-viewer/sidebarToggle"
 
-// Import react-pdf-viewer
+// react-pdf-viewer
 import { Viewer, Worker, type SpecialZoomLevel } from "@react-pdf-viewer/core"
 import { defaultLayoutPlugin } from "@react-pdf-viewer/default-layout"
 import { pageNavigationPlugin } from "@react-pdf-viewer/page-navigation"
@@ -34,6 +26,10 @@ import { zoomPlugin } from "@react-pdf-viewer/zoom"
 import { searchPlugin } from "@react-pdf-viewer/search"
 import { fullScreenPlugin } from "@react-pdf-viewer/full-screen"
 import { printPlugin } from "@react-pdf-viewer/print"
+import { thumbnailPlugin } from "@react-pdf-viewer/thumbnail"
+import { bookmarkPlugin } from "@react-pdf-viewer/bookmark"
+import { rotatePlugin } from "@react-pdf-viewer/rotate"
+import type { SidebarTab } from "@react-pdf-viewer/default-layout"
 
 // Import styles
 import "@react-pdf-viewer/core/lib/styles/index.css"
@@ -43,8 +39,13 @@ import "@react-pdf-viewer/zoom/lib/styles/index.css"
 import "@react-pdf-viewer/search/lib/styles/index.css"
 import "@react-pdf-viewer/full-screen/lib/styles/index.css"
 import "@react-pdf-viewer/print/lib/styles/index.css"
+import "@react-pdf-viewer/thumbnail/lib/styles/index.css"
+import "@react-pdf-viewer/bookmark/lib/styles/index.css"
+// import "@react-pdf-viewer/rotate/lib/styles/index.css"
 
-import { ToolbarPluginProps, ToolbarSlot, type SidebarTab } from "@react-pdf-viewer/default-layout"
+
+// interfaces
+
 
 // Import theme
 import { theme } from "@/lib/colors/theme-config"
@@ -72,6 +73,9 @@ export default function PDFViewer() {
   const [showHeader, setShowHeader] = useState(true)
   const [lastScrollTop, setLastScrollTop] = useState(0)
   const [showGallery, setShowGallery] = useState(false)
+  const [showMobileMenu, setShowMobileMenu] = useState(false)
+  const [isDarkTheme, setIsDarkTheme] = useState(true)
+  const [showSidebar, setShowSidebar] = useState(false)
   const [toast, setToast] = useState<{
     show: boolean
     type: "success" | "error" | "info"
@@ -94,18 +98,18 @@ export default function PDFViewer() {
   const searchPluginInstance = searchPlugin()
   const fullScreenPluginInstance = fullScreenPlugin()
   const printPluginInstance = printPlugin()
+  const thumbnailPluginInstance = thumbnailPlugin()
+  const bookmarkPluginInstance = bookmarkPlugin()
+  const rotatePluginInstance = rotatePlugin()
 
   // Get plugin functions
   const { jumpToPage } = pageNavigationPluginInstance
-  const { Zoom } = zoomPluginInstance
   const { zoomTo } = zoomPluginInstance
-
-  const { EnterFullScreen } = fullScreenPluginInstance
-  const { Print } = printPluginInstance
+  const { RotatePage } = rotatePluginInstance
 
   // Create default layout plugin
   const defaultLayoutPluginInstance = defaultLayoutPlugin({
-    sidebarTabs: () => [],
+    sidebarTabs: (defaultTabs: SidebarTab[]) => defaultTabs,
     renderToolbar: (ToolbarPluginProps) => ToolbarPluginProps[0],
   })
 
@@ -175,7 +179,7 @@ export default function PDFViewer() {
     }
   }, [id])
 
-  // Handle scroll to hide/show header on mobile
+
   useEffect(() => {
     if (!isMobile || !containerRef.current) return
 
@@ -391,11 +395,29 @@ export default function PDFViewer() {
     }
   }
 
+  const handleToggleTheme = () => {
+    setIsDarkTheme(!isDarkTheme)
+  }
+
+  const handleRotate = () => {
+    // RotatePage()
+  }
+
+  const handleToggleBookmark = () => {
+    // TODO: add markers
+    setToast({
+      show: true,
+      type: "info",
+      title: "Marcador",
+      message: "Funcionalidade de marcadores será implementada em breve.",
+    })
+  }
+
   if (loading) {
     return (
       <div
         className="flex h-screen items-center justify-center"
-        style={{ background: theme.colors.background.primary }}
+        style={{ background: isDarkTheme ? "#1a1a1a" : "#f5f5f5" }}
       >
         <PDFLoading />
       </div>
@@ -407,7 +429,9 @@ export default function PDFViewer() {
       <div
         className="flex h-screen flex-col items-center justify-center text-white"
         style={{
-          background: `linear-gradient(to bottom right, ${theme.colors.background.primary}, ${theme.colors.background.secondary})`,
+          background: isDarkTheme
+            ? `linear-gradient(to bottom right, #1a1a1a, #2a2a2a)`
+            : `linear-gradient(to bottom right, ${theme.colors.background.primary}, ${theme.colors.background.secondary})`,
         }}
       >
         <motion.div
@@ -424,7 +448,7 @@ export default function PDFViewer() {
         >
           <FileText size={32} style={{ color: theme.colors.purple.light }} />
         </motion.div>
-        <h2 className="mb-2 text-xl font-bold" style={{ color: theme.colors.text.primary }}>
+        <h2 className="mb-2 text-xl font-bold" style={{ color: isDarkTheme ? "#fff" : theme.colors.text.primary }}>
           Erro ao carregar o PDF
         </h2>
         <div className="mb-6 text-center" style={{ color: theme.colors.purple.light }}>
@@ -459,6 +483,10 @@ export default function PDFViewer() {
               searchPluginInstance,
               fullScreenPluginInstance,
               printPluginInstance,
+              thumbnailPluginInstance,
+              bookmarkPluginInstance,
+              rotatePluginInstance,
+              searchPluginInstance,
             ]}
             onDocumentLoad={(e) => {
               setNumPages(e.doc.numPages)
@@ -467,15 +495,19 @@ export default function PDFViewer() {
               setCurrentPage(e.currentPage + 1)
             }}
             defaultScale={typeof zoomLevel === "number" ? zoomLevel / 100 : zoomLevel}
+            theme={isDarkTheme ? "dark" : "light"}
             renderLoader={(percentages) => (
               <div className="flex h-full items-center justify-center">
                 <div className="text-center">
-                  <div className="mb-2 text-xl font-semibold" style={{ color: theme.colors.text.primary }}>
+                  <div
+                    className="mb-2 text-xl font-semibold"
+                    style={{ color: isDarkTheme ? "#fff" : theme.colors.text.primary }}
+                  >
                     Carregando PDF
                   </div>
                   <div
                     className="h-2 w-64 overflow-hidden rounded-full"
-                    style={{ background: theme.colors.background.tertiary }}
+                    style={{ background: isDarkTheme ? "#2a2a2a" : theme.colors.background.tertiary }}
                   >
                     <div
                       className="h-full transition-all duration-300"
@@ -485,7 +517,7 @@ export default function PDFViewer() {
                       }}
                     />
                   </div>
-                  <div className="mt-1" style={{ color: theme.colors.text.secondary }}>
+                  <div className="mt-1" style={{ color: isDarkTheme ? "#aaa" : theme.colors.text.secondary }}>
                     {Math.round(percentages)}%
                   </div>
                 </div>
@@ -497,173 +529,45 @@ export default function PDFViewer() {
     )
   }
 
-  // Renderização da interface personalizada
+
   return (
-    <div className="flex h-screen flex-col overflow-hidden" style={{ background: theme.colors.background.primary }}>
-      {/* Barra de ferramentas superior */}
+    <div className="flex h-screen flex-col overflow-hidden" style={{ background: isDarkTheme ? "#1a1a1a" : "#f5f5f5" }}>
+
       <AnimatePresence>
-        {(!isMobile || showHeader) && (
-          <motion.div
-            initial={isMobile ? { y: -50, opacity: 0 } : undefined}
-            animate={isMobile ? { y: 0, opacity: 1 } : undefined}
-            exit={isMobile ? { y: -50, opacity: 0 } : undefined}
-            transition={{ duration: 0.3 }}
-            className="flex items-center justify-between border-b px-2 py-2 z-10"
-            style={{
-              borderColor: theme.colors.border.primary,
-              background: theme.colors.background.secondary,
-            }}
-          >
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={handleBackToDashboard}
-                className="rounded p-1.5 hover:bg-opacity-20 hover:bg-purple-900/20"
-                style={{ color: theme.colors.text.primary }}
-                title="Voltar ao Dashboard"
-              >
-                <ArrowLeft size={18} />
-              </button>
-
-              <button
-                onClick={handleOpenGallery}
-                className="rounded p-1.5 hover:bg-opacity-20 hover:bg-purple-900/20"
-                style={{ color: theme.colors.text.primary }}
-                title="Ver todos os PDFs"
-              >
-                <Grid size={18} />
-              </button>
-
-              <div className="flex items-center space-x-1 ml-2">
-                <button
-                  onClick={handlePrevPage}
-                  disabled={currentPage <= 1}
-                  className="rounded p-1.5 hover:bg-opacity-20 hover:bg-purple-900/20 disabled:opacity-50"
-                  style={{ color: theme.colors.text.primary }}
-                  title="Página anterior"
-                >
-                  <ChevronLeft size={18} />
-                </button>
-
-                <div className="flex items-center">
-                  <input
-                    type="text"
-                    value={currentPage}
-                    onChange={handlePageChange}
-                    className="w-8 rounded border px-1 text-center text-sm"
-                    style={{
-                      borderColor: theme.colors.border.primary,
-                      background: theme.colors.background.tertiary,
-                      color: theme.colors.text.primary,
-                    }}
-                    aria-label="Número da página atual"
-                  />
-                  <span className="mx-1" style={{ color: theme.colors.text.secondary }}>
-                    /
-                  </span>
-                  <span style={{ color: theme.colors.text.secondary }}>{numPages || "-"}</span>
-                </div>
-
-                <button
-                  onClick={handleNextPage}
-                  disabled={currentPage >= (numPages || 1)}
-                  className="rounded p-1.5 hover:bg-opacity-20 hover:bg-purple-900/20 disabled:opacity-50"
-                  style={{ color: theme.colors.text.primary }}
-                  title="Próxima página"
-                >
-                  <ChevronRight size={18} />
-                </button>
-              </div>
-            </div>
-
-            {!isMobile && (
-              <div className="flex items-center space-x-2">
-                <div className="flex items-center">
-                  <span className="text-sm" style={{ color: theme.colors.text.secondary }}>
-                    {typeof zoomLevel === "number" ? `${zoomLevel}%` : "Ajustado"}
-                  </span>
-                  <div className="flex">
-                    <button
-                      onClick={handleZoomOut}
-                      className="rounded p-1.5 hover:bg-opacity-20 hover:bg-purple-900/20"
-                      style={{ color: theme.colors.text.primary }}
-                      title="Diminuir zoom"
-                    >
-                      <ChevronDown size={18} />
-                    </button>
-                    <button
-                      onClick={handleZoomIn}
-                      className="rounded p-1.5 hover:bg-opacity-20 hover:bg-purple-900/20"
-                      style={{ color: theme.colors.text.primary }}
-                      title="Aumentar zoom"
-                    >
-                      <ChevronDown size={18} style={{ transform: "rotate(180deg)" }} />
-                    </button>
-                  </div>
-                </div>
-
-                <button
-                  onClick={handleSearch}
-                  className="rounded p-1.5 hover:bg-opacity-20 hover:bg-purple-900/20"
-                  style={{ color: theme.colors.text.primary }}
-                  title="Buscar no documento"
-                >
-                  <SearchIcon size={18} />
-                </button>
-              </div>
-            )}
-
-            <div className="flex items-center space-x-1">
-              <button
-                onClick={handleToggleStar}
-                className="rounded p-1.5 hover:bg-opacity-20 hover:bg-purple-900/20"
-                style={{ color: isStarred ? "#FCD34D" : theme.colors.text.primary }}
-                title={isStarred ? "Remover dos favoritos" : "Adicionar aos favoritos"}
-              >
-                <Star size={18} fill={isStarred ? "#FCD34D" : "none"} />
-              </button>
-
-              <button
-                onClick={handleShare}
-                className="rounded p-1.5 hover:bg-opacity-20 hover:bg-purple-900/20"
-                style={{ color: theme.colors.text.primary }}
-                title="Compartilhar"
-              >
-                <Share2 size={18} />
-              </button>
-
-              <button
-                onClick={handleDownload}
-                className="rounded p-1.5 hover:bg-opacity-20 hover:bg-purple-900/20"
-                style={{ color: theme.colors.text.primary }}
-                title="Download"
-              >
-                <Download size={18} />
-              </button>
-
-              {!isMobile && (
-                <>
-                  <button
-                    onClick={handlePrint}
-                    className="rounded p-1.5 hover:bg-opacity-20 hover:bg-purple-900/20"
-                    style={{ color: theme.colors.text.primary }}
-                    title="Imprimir"
-                  >
-                    <Printer size={18} />
-                  </button>
-
-                  <button
-                    onClick={handleFullScreen}
-                    className="rounded p-1.5 hover:bg-opacity-20 hover:bg-purple-900/20"
-                    style={{ color: theme.colors.text.primary }}
-                    title="Tela cheia"
-                  >
-                    <Maximize size={18} />
-                  </button>
-                </>
-              )}
-            </div>
-          </motion.div>
-        )}
+        {(!isMobile || showHeader) &&
+          (isMobile ? (
+            <MobileToolbar
+              currentPage={currentPage}
+              totalPages={numPages}
+              onPrevPage={handlePrevPage}
+              onNextPage={handleNextPage}
+              onPageChange={handlePageChange}
+              onZoomIn={handleZoomIn}
+              onZoomOut={handleZoomOut}
+              onSearch={handleSearch}
+              onToggleTheme={handleToggleTheme}
+              onShowMenu={() => setShowMobileMenu(true)}
+            />
+          ) : (
+            <DesktopToolbar
+              currentPage={currentPage}
+              totalPages={numPages}
+              zoomLevel={zoomLevel}
+              onPrevPage={handlePrevPage}
+              onNextPage={handleNextPage}
+              onPageChange={handlePageChange}
+              onZoomIn={handleZoomIn}
+              onZoomOut={handleZoomOut}
+              onSearch={handleSearch}
+              onDownload={handleDownload}
+              onPrint={handlePrint}
+              onFullScreen={handleFullScreen}
+              onToggleTheme={handleToggleTheme}
+              onToggleBookmark={handleToggleBookmark}
+              onRotate={handleRotate}
+              
+            />
+          ))}
       </AnimatePresence>
 
       {/* Mobile Floating Button (quando o header está escondido) */}
@@ -679,38 +583,31 @@ export default function PDFViewer() {
         </motion.button>
       )}
 
-      {/* Área do PDF */}
+      {/* Sidebar Toggle */}
+      {!isMobile && <SidebarToggle onToggle={() => setShowSidebar(!showSidebar)} isOpen={showSidebar} />}
+
+
       <div className="flex-1 overflow-auto" ref={containerRef}>
         {renderPDFViewer()}
       </div>
 
-      {/* Mobile Floating Controls */}
-      {isMobile && (
-        <div
-          className="fixed bottom-4 left-1/2 transform -translate-x-1/2 flex items-center space-x-2 rounded-full px-4 py-2 shadow-lg z-20"
-          style={{ background: theme.colors.background.secondary, borderColor: theme.colors.border.primary }}
-        >
-          <button
-            onClick={handleZoomOut}
-            className="rounded-full p-2 hover:bg-opacity-20 hover:bg-purple-900/20"
-            style={{ color: theme.colors.text.primary }}
-          >
-            <ChevronDown size={18} />
-          </button>
-
-          <span className="text-sm" style={{ color: theme.colors.text.secondary }}>
-            {typeof zoomLevel === "number" ? `${zoomLevel}%` : "Ajustado"}
-          </span>
-
-          <button
-            onClick={handleZoomIn}
-            className="rounded-full p-2 hover:bg-opacity-20 hover:bg-purple-900/20"
-            style={{ color: theme.colors.text.primary }}
-          >
-            <ChevronDown size={18} style={{ transform: "rotate(180deg)" }} />
-          </button>
-        </div>
-      )}
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {showMobileMenu && (
+          <MobileMenu
+            isOpen={showMobileMenu}
+            onClose={() => setShowMobileMenu(false)}
+            onDownload={handleDownload}
+            onPrint={handlePrint}
+            onFullScreen={handleFullScreen}
+            onToggleStar={handleToggleStar}
+            onShare={handleShare}
+            onToggleBookmark={handleToggleBookmark}
+            onRotate={handleRotate}
+            isStarred={isStarred}
+          />
+        )}
+      </AnimatePresence>
 
       {/* PDF Gallery Modal */}
       <PdfGalleryModal
@@ -759,15 +656,25 @@ export default function PDFViewer() {
         /* Esconder a barra de ferramentas padrão */
         .rpv-core__inner-pages {
           padding-top: 0 !important;
+          border: none !important;
         }
-        
-        .rpv-core__toolbar {
+
+        .rpv-default-layout__toolbar {
           display: none !important;
+        }
+
+        .rpv-default-layout__sidebar-headers {
+        background-color: ${isDarkTheme ? theme.colors.purple.primary : '#f5f5f5'} !important;
+
+        }
+
+        .rpv-default-layout__sidebar {
+        padding-top: 0rem;
         }
         
         /* Estilizar o fundo e as páginas */
         .rpv-core__viewer-container {
-          background-color: ${theme.colors.background.primary} !important;
+          background-color: ${isDarkTheme ? "#1a1a1a" : "#f5f5f5"} !important;
         }
         
         .rpv-core__page-layer {
@@ -778,16 +685,16 @@ export default function PDFViewer() {
         
         /* Estilizar a barra lateral */
         .rpv-core__sidebar {
-          background-color: ${theme.colors.background.tertiary} !important;
-          border-color: ${theme.colors.border.primary} !important;
+          background-color: ${isDarkTheme ? "#2a2a2a" : theme.colors.background.tertiary} !important;
+          border-color: ${isDarkTheme ? theme.colors.purple.primary : theme.colors.border.primary} !important;
         }
         
         .rpv-core__sidebar-tabs {
-          background-color: ${theme.colors.background.secondary} !important;
+          background-color: ${isDarkTheme ? "#1a1a1a" : theme.colors.background.secondary} !important;
         }
         
         .rpv-core__sidebar-tab {
-          color: ${theme.colors.text.secondary} !important;
+          color: ${isDarkTheme ? "#aaa" : theme.colors.text.secondary} !important;
         }
         
         .rpv-core__sidebar-tab--selected {
@@ -797,8 +704,8 @@ export default function PDFViewer() {
         
         /* Estilizar miniaturas */
         .rpv-thumbnail__item {
-          background-color: ${theme.colors.background.tertiary} !important;
-          border-color: ${theme.colors.border.primary} !important;
+          background-color: ${isDarkTheme ? "#2a2a2a" : theme.colors.background.tertiary} !important;
+          border-color: ${isDarkTheme ? theme.colors.purple.primary : theme.colors.border.primary} !important;
         }
         
         .rpv-thumbnail__item--selected {
@@ -807,15 +714,15 @@ export default function PDFViewer() {
         
         /* Estilizar a busca */
         .rpv-search__popover {
-          background-color: ${theme.colors.background.tertiary} !important;
-          border-color: ${theme.colors.border.primary} !important;
-          color: ${theme.colors.text.primary} !important;
+          background-color: ${isDarkTheme ? "#2a2a2a" : theme.colors.background.tertiary} !important;
+          border-color: ${isDarkTheme ? "#333" : theme.colors.border.primary} !important;
+          color: ${isDarkTheme ? "#fff" : theme.colors.text.primary} !important;
         }
         
         .rpv-search__input {
-          background-color: ${theme.colors.background.secondary} !important;
-          border-color: ${theme.colors.border.primary} !important;
-          color: ${theme.colors.text.primary} !important;
+          background-color: ${isDarkTheme ? "#1a1a1a" : theme.colors.background.secondary} !important;
+          border-color: ${isDarkTheme ? "#333" : theme.colors.border.primary} !important;
+          color: ${isDarkTheme ? "#fff" : theme.colors.text.primary} !important;
         }
         
         /* Ajustes responsivos */

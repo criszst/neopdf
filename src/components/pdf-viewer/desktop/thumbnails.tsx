@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Document, Page, pdfjs } from "react-pdf"
-import { Loader2 } from "lucide-react"
+import { Loader2 } from 'lucide-react'
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { motion } from "framer-motion"
 
@@ -11,9 +11,10 @@ interface ThumbnailsProps {
   currentPage: number
   numPages: number
   onPageClick: (page: number) => void
+  isDarkTheme?: boolean
 }
 
-export default function Thumbnails({ pdfUrl, currentPage, numPages, onPageClick }: ThumbnailsProps) {
+export default function Thumbnails({ pdfUrl, currentPage, numPages, onPageClick, isDarkTheme = true }: ThumbnailsProps) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const isMobile = useMediaQuery("(max-width: 768px)")
@@ -38,7 +39,7 @@ export default function Thumbnails({ pdfUrl, currentPage, numPages, onPageClick 
 
   // Calculate thumbnail width based on screen size
   const getThumbnailWidth = () => {
-    if (isMobile) return 80
+    if (isMobile) return 0
     if (isSmallScreen) return 120
     return 150
   }
@@ -58,9 +59,13 @@ export default function Thumbnails({ pdfUrl, currentPage, numPages, onPageClick 
     hover: { scale: 1.05, transition: { duration: 0.2 } },
   }
 
+  const bgColor = isDarkTheme ? "#151525" : "#f8f9fa"
+  const textColor = isDarkTheme ? "#fff" : "#333"
+  const accentColor = "#8B5CF6"
+
   return (
-    <div className="h-full w-full overflow-y-auto bg-white p-2">
-      <h3 className="mb-3 px-2 text-xs font-medium text-purple-600">Páginas</h3>
+    <div className="h-full w-full overflow-y-auto p-2" style={{ backgroundColor: bgColor }}>
+      <h3 className="mb-3 px-2 text-xs font-medium" style={{ color: accentColor }}>Páginas</h3>
 
       {loading && (
         <div className="flex h-20 items-center justify-center">
@@ -74,7 +79,7 @@ export default function Thumbnails({ pdfUrl, currentPage, numPages, onPageClick 
               scale: { duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" },
             }}
           >
-            <Loader2 className="h-5 w-5 text-purple-500" />
+            <Loader2 className="h-5 w-5" style={{ color: accentColor }} />
           </motion.div>
         </div>
       )}
@@ -86,9 +91,10 @@ export default function Thumbnails({ pdfUrl, currentPage, numPages, onPageClick 
               key={`thumbnail-${index + 1}`}
               className={`${isMobile ? "flex-shrink-0" : "block"} cursor-pointer overflow-hidden rounded-md transition-all ${
                 currentPage === index + 1
-                  ? "ring-2 ring-purple-500 ring-offset-2 ring-offset-white"
-                  : "hover:ring-1 hover:ring-purple-400 hover:ring-offset-1 hover:ring-offset-white"
+                  ? "ring-2 ring-purple-500 ring-offset-2"
+                  : "hover:ring-1 hover:ring-purple-400 hover:ring-offset-1"
               }`}
+
               onClick={() => onPageClick(index + 1)}
               variants={thumbnailVariants}
               initial="initial"
@@ -104,9 +110,10 @@ export default function Thumbnails({ pdfUrl, currentPage, numPages, onPageClick 
                 className="thumbnail-page"
                 loading={
                   <div
-                    className={`flex items-center justify-center bg-gray-100 ${
+                    className={`flex items-center justify-center ${
                       isMobile ? "h-[100px] w-[80px]" : "h-[150px] w-[100px]"
                     }`}
+                    style={{ backgroundColor: isDarkTheme ? "#0f0423" : "#eee" }}
                   >
                     <motion.div
                       animate={{
@@ -118,12 +125,12 @@ export default function Thumbnails({ pdfUrl, currentPage, numPages, onPageClick 
                         scale: { duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" },
                       }}
                     >
-                      <Loader2 className="h-4 w-4 text-purple-400" />
+                      <Loader2 className="h-4 w-4" style={{ color: accentColor }} />
                     </motion.div>
                   </div>
                 }
               />
-              <div className="bg-purple-100 py-1 text-center text-xs text-purple-700">{index + 1}</div>
+              <div className="py-1 text-center text-xs" style={{ backgroundColor: isDarkTheme ? "#0f0423" : "#eee", color: accentColor }}>{index + 1}</div>
             </motion.div>
           ))}
         </Document>
