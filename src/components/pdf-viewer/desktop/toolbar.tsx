@@ -63,7 +63,7 @@ export default function DesktopToolbar({
       <div className="flex items-center space-x-2">
         <button
           onClick={onSearch}
-          className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-[#151525]"
+          className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-[#0f0423]"
           title="Buscar"
         >
           <Search size={18} />
@@ -84,7 +84,7 @@ export default function DesktopToolbar({
               type="text"
               value={currentPage}
               onChange={onPageChange}
-              className="w-10 bg-transparent text-center text-sm focus:outline-none"
+              className="w-12 bg-transparent text-center text-sm focus:outline-none"
               aria-label="Número da página atual"
             />
             <span className="mx-1 text-gray-400">/</span>

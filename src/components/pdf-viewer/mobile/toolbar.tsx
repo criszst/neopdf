@@ -46,7 +46,7 @@ export default function MobileToolbar({
             type="text"
             value={currentPage}
             onChange={onPageChange}
-            className="w-9 bg-transparent text-center text-sm focus:outline-none"
+            className="w-20 bg-transparent text-center text-sm focus:outline-none"
             aria-label="Número da página atual"
           />
           <span className="mx-1 text-xs text-gray-400">/</span>
