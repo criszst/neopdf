@@ -2,7 +2,6 @@
 
 import { useRef, useState } from "react"
 
-import Image from "next/image"
 import Link from "next/link"
 
 import { ChevronDown } from "lucide-react"
@@ -13,12 +12,13 @@ import { faqs } from "@/lib/utils/faqs"
 import { features } from "@/lib/utils/feats"
 
 
-import NavbarComponent from "@/components/navbar/navbar"
+import NavbarComponent from "@/components/home/navbar"
 import PricingComponent from "@/components/home/pricing"
-import FooterComponent from "@/components/footer/footer"
+import FooterComponent from "@/components/home/footer"
 
 import FeatureComparison from "@/components/home/comparasion"
 import AnimatedBackground from "@/components/animations/AnimatedBackground"
+import PDFInterfacePreview from "@/components/animations/InterfaceRender"
 
 
 export default function Home() {
@@ -54,7 +54,7 @@ export default function Home() {
                 className="relative z-10"
               >
                 <h1 className="text-sm font-medium uppercase tracking-wider text-blue-400">
-                  PDF Management Reimagined
+                  PDF Management Reimagined (Beta Test)
                 </h1>
                 <p className="mt-3 text-4xl font-light tracking-tight text-white sm:text-6xl">
                   <span className="font-medium text-purple-500">Neo</span> Era of PDF Experience
@@ -62,6 +62,8 @@ export default function Home() {
                 <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-400">
                   Transform how you interact with PDFs. Advanced features, intuitive interface, and lightning-fast
                   performance make document management a breeze.
+
+
                 </p>
               </motion.div>
 
@@ -93,19 +95,14 @@ export default function Home() {
               >
                 <div className="relative mx-auto max-w-5xl overflow-hidden rounded-xl bg-gradient-to-b from-white/5 to-white/0 p-1 shadow-2xl">
                   <div className="relative rounded-lg bg-[#010614]/50 p-8 backdrop-blur-sm">
-                    <Image
-                      src="/placeholder.svg"
-                      alt="NeoPDF Interface"
-                      width={1200}
-                      height={800}
-                      className="rounded-lg shadow-2xl"
-                    />
+                    <PDFInterfacePreview className="rounded-lg shadow-2xl" />
                     <div className="absolute inset-0 rounded-lg bg-gradient-to-t from-[#010614] via-transparent to-transparent" />
                   </div>
                 </div>
               </motion.div>
             </div>
           </div>
+  
         </motion.div>
       </div>
 
@@ -207,4 +204,3 @@ export default function Home() {
     </div >
   )
 }
-

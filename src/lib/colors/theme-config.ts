@@ -21,6 +21,7 @@ export const theme = {
       primary: "#FFFFFF",
       secondary: "rgba(255, 255, 255, 0.8)",
       muted: "rgba(255, 255, 255, 0.6)",
+      purple: "#9061f9",
     },
     border: {
       primary: "rgba(139, 92, 246, 0.2)",
