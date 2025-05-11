@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { Download, Printer, Maximize2, Star, Share2, Bookmark, RotateCw, X } from 'lucide-react'
+import { Download, Printer, Maximize2, Star, Share2, Bookmark, RotateCw, X, Layers } from "lucide-react"
 
 interface MobileMenuProps {
   isOpen: boolean
@@ -13,8 +13,10 @@ interface MobileMenuProps {
   onShare: () => void
   onToggleBookmark?: () => void
   onRotate?: () => void
+  onToggleSidebar?: () => void
   isStarred: boolean
-  // togglePdfGallery: () => boolean
+  isDarkTheme?: boolean
+  showSidebar?: boolean
 }
 
 export default function MobileMenu({
@@ -27,7 +29,10 @@ export default function MobileMenu({
   onShare,
   onToggleBookmark,
   onRotate,
+  onToggleSidebar,
   isStarred,
+  isDarkTheme = true,
+  showSidebar = false,
 }: MobileMenuProps) {
   if (!isOpen) return null
 
@@ -43,14 +48,19 @@ export default function MobileMenu({
         initial={{ y: 100 }}
         animate={{ y: 0 }}
         exit={{ y: 100 }}
-        className="w-full max-w-md rounded-t-xl bg-[#0f0423] p-4 text-white"
+        className="w-full max-w-md rounded-t-xl p-4"
+        style={{ backgroundColor: isDarkTheme ? "#0f0423" : "#ffffff" }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-medium">Opções</h3>
+          <h3 className="text-lg font-medium" style={{ color: isDarkTheme ? "#ffffff" : "#1e293b" }}>
+            Opções
+          </h3>
           <button
             onClick={onClose}
-            className="rounded-full p-1 hover:bg-[#151525]"
+            className={`rounded-full p-1.5 ${
+              isDarkTheme ? "hover:bg-[#151525] text-white" : "hover:bg-gray-100 text-gray-700"
+            }`}
           >
             <X size={20} />
           </button>
@@ -62,10 +72,18 @@ export default function MobileMenu({
               onToggleStar()
               onClose()
             }}
-            className="flex flex-col items-center justify-center rounded-lg p-3 hover:bg-[#151525]"
+            className={`flex flex-col items-center justify-center rounded-lg p-3 ${
+              isDarkTheme ? "hover:bg-[#151525]" : "hover:bg-gray-100"
+            }`}
           >
-            <Star size={24} fill={isStarred ? "#FCD34D" : "none"} color={isStarred ? "#FCD34D" : "white"} />
-            <span className="mt-1 text-xs">Favorito</span>
+            <Star
+              size={24}
+              fill={isStarred ? "#FCD34D" : "none"}
+              color={isStarred ? "#FCD34D" : isDarkTheme ? "#ffffff" : "#4b5563"}
+            />
+            <span className="mt-1 text-xs" style={{ color: isDarkTheme ? "#e2e8f0" : "#4b5563" }}>
+              Favorito
+            </span>
           </button>
 
           <button
@@ -73,10 +91,14 @@ export default function MobileMenu({
               onShare()
               onClose()
             }}
-            className="flex flex-col items-center justify-center rounded-lg p-3 hover:bg-[#151525]"
+            className={`flex flex-col items-center justify-center rounded-lg p-3 ${
+              isDarkTheme ? "hover:bg-[#151525]" : "hover:bg-gray-100"
+            }`}
           >
-            <Share2 size={24} />
-            <span className="mt-1 text-xs">Compartilhar</span>
+            <Share2 size={24} color={isDarkTheme ? "#ffffff" : "#4b5563"} />
+            <span className="mt-1 text-xs" style={{ color: isDarkTheme ? "#e2e8f0" : "#4b5563" }}>
+              Compartilhar
+            </span>
           </button>
 
           <button
@@ -84,10 +106,14 @@ export default function MobileMenu({
               onDownload()
               onClose()
             }}
-            className="flex flex-col items-center justify-center rounded-lg p-3 hover:bg-[#151525]"
+            className={`flex flex-col items-center justify-center rounded-lg p-3 ${
+              isDarkTheme ? "hover:bg-[#151525]" : "hover:bg-gray-100"
+            }`}
           >
-            <Download size={24} />
-            <span className="mt-1 text-xs">Download</span>
+            <Download size={24} color={isDarkTheme ? "#ffffff" : "#4b5563"} />
+            <span className="mt-1 text-xs" style={{ color: isDarkTheme ? "#e2e8f0" : "#4b5563" }}>
+              Download
+            </span>
           </button>
 
           <button
@@ -95,10 +121,14 @@ export default function MobileMenu({
               onPrint()
               onClose()
             }}
-            className="flex flex-col items-center justify-center rounded-lg p-3 hover:bg-[#151525]"
+            className={`flex flex-col items-center justify-center rounded-lg p-3 ${
+              isDarkTheme ? "hover:bg-[#151525]" : "hover:bg-gray-100"
+            }`}
           >
-            <Printer size={24} />
-            <span className="mt-1 text-xs">Imprimir</span>
+            <Printer size={24} color={isDarkTheme ? "#ffffff" : "#4b5563"} />
+            <span className="mt-1 text-xs" style={{ color: isDarkTheme ? "#e2e8f0" : "#4b5563" }}>
+              Imprimir
+            </span>
           </button>
 
           <button
@@ -106,10 +136,14 @@ export default function MobileMenu({
               onFullScreen()
               onClose()
             }}
-            className="flex flex-col items-center justify-center rounded-lg p-3 hover:bg-[#151525]"
+            className={`flex flex-col items-center justify-center rounded-lg p-3 ${
+              isDarkTheme ? "hover:bg-[#151525]" : "hover:bg-gray-100"
+            }`}
           >
-            <Maximize2 size={24} />
-            <span className="mt-1 text-xs">Tela cheia</span>
+            <Maximize2 size={24} color={isDarkTheme ? "#ffffff" : "#4b5563"} />
+            <span className="mt-1 text-xs" style={{ color: isDarkTheme ? "#e2e8f0" : "#4b5563" }}>
+              Tela cheia
+            </span>
           </button>
 
           {onToggleBookmark && (
@@ -118,23 +152,16 @@ export default function MobileMenu({
                 onToggleBookmark()
                 onClose()
               }}
-              className="flex flex-col items-center justify-center rounded-lg p-3 hover:bg-[#151525]"
+              className={`flex flex-col items-center justify-center rounded-lg p-3 ${
+                isDarkTheme ? "hover:bg-[#151525]" : "hover:bg-gray-100"
+              }`}
             >
-              <Bookmark size={24} />
-              <span className="mt-1 text-xs">Marcador</span>
+              <Bookmark size={24} color={isDarkTheme ? "#ffffff" : "#4b5563"} />
+              <span className="mt-1 text-xs" style={{ color: isDarkTheme ? "#e2e8f0" : "#4b5563" }}>
+                Marcador
+              </span>
             </button>
           )}
-
-          {/* <button
-            onClick={() => {
-              togglePdfGallery()
-              onClose()
-            }}
-            className="flex flex-col items-center justify-center rounded-lg p-3 hover:bg-[#151525]"
-          >
-            <Bookmark size={24} />
-            <span className="mt-1 text-xs">Marcador</span>
-          </button> */}
 
           {onRotate && (
             <button
@@ -142,10 +169,31 @@ export default function MobileMenu({
                 onRotate()
                 onClose()
               }}
-              className="flex flex-col items-center justify-center rounded-lg p-3 hover:bg-[#151525]"
+              className={`flex flex-col items-center justify-center rounded-lg p-3 ${
+                isDarkTheme ? "hover:bg-[#151525]" : "hover:bg-gray-100"
+              }`}
             >
-              <RotateCw size={24} />
-              <span className="mt-1 text-xs">Girar</span>
+              <RotateCw size={24} color={isDarkTheme ? "#ffffff" : "#4b5563"} />
+              <span className="mt-1 text-xs" style={{ color: isDarkTheme ? "#e2e8f0" : "#4b5563" }}>
+                Girar
+              </span>
+            </button>
+          )}
+
+          {onToggleSidebar && (
+            <button
+              onClick={() => {
+                onToggleSidebar()
+                onClose()
+              }}
+              className={`flex flex-col items-center justify-center rounded-lg p-3 ${
+                isDarkTheme ? "hover:bg-[#151525]" : "hover:bg-gray-100"
+              }`}
+            >
+              <Layers size={24} color={isDarkTheme ? "#ffffff" : "#4b5563"} />
+              <span className="mt-1 text-xs" style={{ color: isDarkTheme ? "#e2e8f0" : "#4b5563" }}>
+                Miniaturas
+              </span>
             </button>
           )}
         </div>
